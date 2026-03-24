@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="SpotBoardingHouse.Api/SpotBoardingHouse.Api.csproj" />
+  <Project Path="SpotBoardingHouse.Application/SpotBoardingHouse.Application.csproj" />
+  <Project Path="SpotBoardingHouse.BlazorUI/SpotBoardingHouse.BlazorUI.csproj" />
+  <Project Path="SpotBoardingHouse.Domain/SpotBoardingHouse.Domain.csproj" />
+  <Project Path="SpotBoardingHouse.Infrastructure/SpotBoardingHouse.Infrastructure.csproj" />
+</Solution>
