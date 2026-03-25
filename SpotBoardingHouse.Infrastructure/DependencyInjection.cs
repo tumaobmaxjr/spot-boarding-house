@@ -9,6 +9,7 @@ namespace SpotBoardingHouse.Infrastructure
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
         {
             services.AddScoped<IRoleRepository, RoleRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
             return services;
         }
     }

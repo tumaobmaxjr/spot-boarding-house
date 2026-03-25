@@ -51,7 +51,7 @@ namespace SpotBoardingHouse.Api
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                 await dbContext.Database.MigrateAsync();
-                await ApplicationDbSeeder.SeedAsync(dbContext);
+                await ApplicationDbSeeder.SeedAsync(dbContext, app.Configuration);
             }
 
             // Configure the HTTP request pipeline.
