@@ -93,6 +93,18 @@ namespace SpotBoardingHouse.Api
 
             builder.Services.AddAuthorization();
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("BlazorUI", policy =>
+                {
+                    policy.WithOrigins(
+                            "https://localhost:7176",
+                            "http://localhost:5072")
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
+
             var app = builder.Build();
 
             using (var scope = app.Services.CreateScope())
@@ -110,6 +122,8 @@ namespace SpotBoardingHouse.Api
             }
 
             app.UseHttpsRedirection();
+
+            app.UseCors("BlazorUI");
 
             app.UseAuthentication();
             app.UseAuthorization();

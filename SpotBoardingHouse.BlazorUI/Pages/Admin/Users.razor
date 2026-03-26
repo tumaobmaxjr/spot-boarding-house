@@ -1,0 +1,67 @@
+﻿@page "/admin/users"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+@inject IHttpClientFactory HttpClientFactory
+
+<h1>Users</h1>
+
+@if (_loading)
+{
+    <p>Loading...</p>
+}
+else if (!string.IsNullOrWhiteSpace(_error))
+{
+    <div class="alert alert-danger">@_error</div>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var u in _users)
+            {
+                <tr>
+                    <td>@u.Email</td>
+                    <td>@u.FirstName</td>
+                    <td>@u.LastName</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private bool _loading = true;
+    private string? _error;
+    private List<UserListItem> _users = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var client = HttpClientFactory.CreateClient("Api.Auth");
+            var result = await client.GetFromJsonAsync<List<UserListItem>>("api/v1/Users");
+            _users = result ?? [];
+        }
+        catch
+        {
+            _error = "Failed to load users.";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private class UserListItem
+    {
+        public string Email { get; set; } = string.Empty;
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+    }
+}

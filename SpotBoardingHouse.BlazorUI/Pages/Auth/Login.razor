@@ -1,0 +1,54 @@
+﻿@page "/login"
+@using SpotBoardingHouse.BlazorUI.Models.Auth
+@inject SpotBoardingHouse.BlazorUI.Services.AuthService AuthService
+@inject NavigationManager NavigationManager
+
+<h1>Login</h1>
+
+<EditForm Model="_model" OnValidSubmit="HandleLogin">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label>Email</label>
+        <InputText class="form-control" @bind-Value="_model.Email" />
+    </div>
+
+    <div class="mb-3">
+        <label>Password</label>
+        <InputText class="form-control" @bind-Value="_model.Password" type="password" />
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="alert alert-danger">@_error</div>
+    }
+
+    <button class="btn btn-primary" type="submit" disabled="@_isSubmitting">
+        @(_isSubmitting ? "Signing in..." : "Login")
+    </button>
+</EditForm>
+
+@code {
+    private readonly LoginRequest _model = new();
+    private string? _error;
+    private bool _isSubmitting;
+
+    private async Task HandleLogin()
+    {
+        _isSubmitting = true;
+        _error = null;
+
+        var result = await AuthService.LoginAsync(_model);
+
+        _isSubmitting = false;
+
+        if (!result.Succeeded)
+        {
+            _error = result.Error;
+            return;
+        }
+
+        NavigationManager.NavigateTo("/admin/users", true);
+    }
+}
