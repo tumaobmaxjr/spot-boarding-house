@@ -2,35 +2,30 @@
 @attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
 @inject IHttpClientFactory HttpClientFactory
 
-<h1>Roles</h1>
+<PageTitle>Roles | SpotBH</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-4">Roles</MudText>
 
 @if (_loading)
 {
-    <p>Loading...</p>
+    <MudProgressCircular Indeterminate="true" />
 }
 else if (!string.IsNullOrWhiteSpace(_error))
 {
-    <div class="alert alert-danger">@_error</div>
+    <MudAlert Severity="Severity.Error">@_error</MudAlert>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Description</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var role in _roles)
-            {
-                <tr>
-                    <td>@role.Name</td>
-                    <td>@role.Description</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <MudTable Items="_roles" Dense="true" Hover="true" Bordered="true">
+        <HeaderContent>
+            <MudTh>Name</MudTh>
+            <MudTh>Description</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Name">@context.Name</MudTd>
+            <MudTd DataLabel="Description">@context.Description</MudTd>
+        </RowTemplate>
+    </MudTable>
 }
 
 @code {

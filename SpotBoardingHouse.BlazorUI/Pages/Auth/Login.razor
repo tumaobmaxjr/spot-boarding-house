@@ -1,33 +1,46 @@
 ﻿@page "/login"
 @using SpotBoardingHouse.BlazorUI.Models.Auth
-@inject SpotBoardingHouse.BlazorUI.Services.AuthService AuthService
+@inject AuthService AuthService
 @inject NavigationManager NavigationManager
 
-<h1>Login</h1>
+<PageTitle>Login | SpotBH</PageTitle>
 
-<EditForm Model="_model" OnValidSubmit="HandleLogin">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-12">
+    <MudPaper Elevation="4" Class="pa-6">
+        <MudText Typo="Typo.h5" Class="mb-4">Sign In</MudText>
 
-    <div class="mb-3">
-        <label>Email</label>
-        <InputText class="form-control" @bind-Value="_model.Email" />
-    </div>
+        <EditForm Model="_model" OnValidSubmit="HandleLogin">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
 
-    <div class="mb-3">
-        <label>Password</label>
-        <InputText class="form-control" @bind-Value="_model.Password" type="password" />
-    </div>
+            <MudTextField @bind-Value="_model.Email"
+                          Label="Email"
+                          Variant="Variant.Outlined"
+                          Required="true"
+                          Class="mb-3" />
 
-    @if (!string.IsNullOrWhiteSpace(_error))
-    {
-        <div class="alert alert-danger">@_error</div>
-    }
+            <MudTextField @bind-Value="_model.Password"
+                          Label="Password"
+                          InputType="InputType.Password"
+                          Variant="Variant.Outlined"
+                          Required="true"
+                          Class="mb-3" />
 
-    <button class="btn btn-primary" type="submit" disabled="@_isSubmitting">
-        @(_isSubmitting ? "Signing in..." : "Login")
-    </button>
-</EditForm>
+            @if (!string.IsNullOrWhiteSpace(_error))
+            {
+                <MudAlert Severity="Severity.Error" Dense="true" Class="mb-3">@_error</MudAlert>
+            }
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       ButtonType="ButtonType.Submit"
+                       Disabled="_isSubmitting"
+                       FullWidth="true">
+                @(_isSubmitting ? "Signing in..." : "Login")
+            </MudButton>
+        </EditForm>
+    </MudPaper>
+</MudContainer>
 
 @code {
     private readonly LoginRequest _model = new();

@@ -2,37 +2,32 @@
 @attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
 @inject IHttpClientFactory HttpClientFactory
 
-<h1>Users</h1>
+<PageTitle>Users | SpotBH</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-4">Users</MudText>
 
 @if (_loading)
 {
-    <p>Loading...</p>
+    <MudProgressCircular Indeterminate="true" />
 }
 else if (!string.IsNullOrWhiteSpace(_error))
 {
-    <div class="alert alert-danger">@_error</div>
+    <MudAlert Severity="Severity.Error">@_error</MudAlert>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Email</th>
-                <th>First Name</th>
-                <th>Last Name</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var u in _users)
-            {
-                <tr>
-                    <td>@u.Email</td>
-                    <td>@u.FirstName</td>
-                    <td>@u.LastName</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <MudTable Items="_users" Dense="true" Hover="true" Bordered="true">
+        <HeaderContent>
+            <MudTh>Email</MudTh>
+            <MudTh>First Name</MudTh>
+            <MudTh>Last Name</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Email">@context.Email</MudTd>
+            <MudTd DataLabel="First Name">@context.FirstName</MudTd>
+            <MudTd DataLabel="Last Name">@context.LastName</MudTd>
+        </RowTemplate>
+    </MudTable>
 }
 
 @code {
