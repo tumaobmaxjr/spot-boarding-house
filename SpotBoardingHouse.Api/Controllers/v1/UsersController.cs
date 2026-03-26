@@ -9,7 +9,7 @@ namespace SpotBoardingHouse.Api.Controllers.v1
     [ApiController]
     [ApiVersion("1.0")]
     [Authorize(Roles = "Admin")]
-    [Route("api/v{version:apiVersion}[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
