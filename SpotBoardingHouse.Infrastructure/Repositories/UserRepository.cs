@@ -31,6 +31,15 @@ namespace SpotBoardingHouse.Infrastructure.Repositories
                 .FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
         }
 
+        public async Task<User?> GetByEmailAsync(string email)
+        {
+            var normalizedEmail = email.Trim().ToLowerInvariant();
+
+            return await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => !u.IsDeleted && u.Email.ToLower() == normalizedEmail);
+        }
+
         public async Task<User> AddAsync(User user)
         {
             _context.Users.Add(user);
@@ -65,8 +74,10 @@ namespace SpotBoardingHouse.Infrastructure.Repositories
 
         public async Task<bool> EmailExistsAsync(string email, Guid? excludeId = null)
         {
+            var normalizedEmail = email.Trim().ToLowerInvariant();
+
             var query = _context.Users
-                .Where(u => u.Email == email && !u.IsDeleted);
+                .Where(u => !u.IsDeleted && u.Email.ToLower() == normalizedEmail);
 
             if (excludeId.HasValue)
             {
@@ -78,7 +89,7 @@ namespace SpotBoardingHouse.Infrastructure.Repositories
 
         public async Task<bool> RoleExistsAsync(Guid roleId)
         {
-            return await _context.Users
+            return await _context.Roles
                 .AnyAsync(r => r.Id == roleId && !r.IsDeleted);
         }
     }

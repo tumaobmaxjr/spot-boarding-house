@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SpotBoardingHouse.Application.DTOs.Users;
 using SpotBoardingHouse.Application.Interfaces.Services;
@@ -7,6 +8,7 @@ namespace SpotBoardingHouse.Api.Controllers.v1
 {
     [ApiController]
     [ApiVersion("1.0")]
+    [Authorize(Roles = "Admin")]
     [Route("api/v{version:apiVersion}[controller]")]
     public class UsersController : ControllerBase
     {
