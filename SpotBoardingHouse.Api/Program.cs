@@ -98,10 +98,10 @@ namespace SpotBoardingHouse.Api
                 options.AddPolicy("BlazorUI", policy =>
                 {
                     policy.WithOrigins(
-                            "https://localhost:7176",
-                            "http://localhost:5072")
-                          .AllowAnyHeader()
-                          .AllowAnyMethod();
+                        "http://localhost:5173",
+                        "http://localhost:5173")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
                 });
             });
 
