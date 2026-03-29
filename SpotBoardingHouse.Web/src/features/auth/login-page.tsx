@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, type To } from "react-router-dom";
 import { useAuth } from "./use-auth";
 import { useState } from "react";
 import { Box, Stack } from "@mui/system";
@@ -12,6 +12,10 @@ export function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const location = useLocation();
+  const from: To =
+    (location.state as { from?: { pathname?: string } } | null)?.from
+      ?.pathname ?? "/";
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,7 +24,7 @@ export function LoginPage() {
 
     try {
       await login({ email, password });
-      navigate("/admin/users", { replace: true });
+      navigate(from, { replace: true });
     } catch (err) {
       const axiosError = err as AxiosError<{ message?: string }>;
       if (axiosError.response?.status === 401) {

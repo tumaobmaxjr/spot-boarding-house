@@ -99,7 +99,7 @@ namespace SpotBoardingHouse.Api
                 {
                     policy.WithOrigins(
                         "http://localhost:5173",
-                        "http://localhost:5173")
+                        "https://localhost:5173")
                         .AllowAnyHeader()
                         .AllowAnyMethod();
                 });

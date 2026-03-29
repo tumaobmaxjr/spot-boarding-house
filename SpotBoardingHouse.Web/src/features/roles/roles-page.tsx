@@ -11,6 +11,21 @@ import {
 } from "@mui/material";
 import { useRolesQuery } from "./queries";
 
+function formatDateTime(value: string | null) {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+
+  return new Intl.DateTimeFormat(undefined, {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    second: "numeric",
+  }).format(date);
+}
+
 export function RolesPage() {
   const { data, isLoading, isError, error } = useRolesQuery();
 
@@ -18,7 +33,7 @@ export function RolesPage() {
   if (isError)
     return (
       <Alert severity="error">
-        {(error as Error).message || "Failed to load users."}
+        {(error as Error).message || "Failed to load roles."}
       </Alert>
     );
 
@@ -40,9 +55,9 @@ export function RolesPage() {
           {(data ?? []).map((role) => (
             <TableRow key={role.id}>
               <TableCell>{role.name}</TableCell>
-              <TableCell>{role.description}</TableCell>
-              <TableCell>{role.createdAt}</TableCell>
-              <TableCell>{role.updatedAt}</TableCell>
+              <TableCell>{role.description ?? "-"}</TableCell>
+              <TableCell>{formatDateTime(role.createdAt)}</TableCell>
+              <TableCell>{formatDateTime(role.updatedAt)}</TableCell>
             </TableRow>
           ))}
         </TableBody>

@@ -11,6 +11,21 @@ import {
 } from "@mui/material";
 import { useUsersQuery } from "./queries";
 
+function formatDateTime(value: string | null) {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+
+  return new Intl.DateTimeFormat(undefined, {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    second: "numeric",
+  }).format(date);
+}
+
 export function UsersPage() {
   const { data, isLoading, isError, error } = useUsersQuery();
 
@@ -45,8 +60,8 @@ export function UsersPage() {
               <TableCell>{user.firstName}</TableCell>
               <TableCell>{user.lastName}</TableCell>
               <TableCell>{user.roleName}</TableCell>
-              <TableCell>{user.createdAt}</TableCell>
-              <TableCell>{user.updatedAt}</TableCell>
+              <TableCell>{formatDateTime(user.createdAt)}</TableCell>
+              <TableCell>{formatDateTime(user.updatedAt)}</TableCell>
             </TableRow>
           ))}
         </TableBody>

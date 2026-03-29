@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../lib/api";
-import type { RolesDto } from "./types";
+import type { RoleDto } from "./types";
 
 async function fetchRoles() {
-  const { data } = await api.get<RolesDto[]>("api/v1/roles");
+  const { data } = await api.get<RoleDto[]>("api/v1/roles");
   return data;
 }
 

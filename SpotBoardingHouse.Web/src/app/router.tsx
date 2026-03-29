@@ -1,4 +1,11 @@
-import { Navigate, Outlet, Route, Routes, useNavigate } from "react-router-dom";
+import {
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import {
   Alert,
   Box,
@@ -60,14 +67,21 @@ function Shell({ children }: { children: React.ReactNode }) {
 
 function GuestOnlyRoute() {
   const { isAuthenticated } = useAuth();
-  if (isAuthenticated) return <Navigate to="/admin/users" replace />;
+  const location = useLocation();
+
+  const from = (location.state as { from?: { pathname?: string } } | null)?.from
+    ?.pathname;
+
+  if (isAuthenticated) return <Navigate to={from || "/"} replace />;
   return <Outlet />;
 }
 
 function ProtectedAdminRoute() {
   const { isAuthenticated, role } = useAuth();
+  const location = useLocation();
 
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isAuthenticated)
+    return <Navigate to="/login" replace state={{ from: location }} />;
   if (role !== "Admin") return <Navigate to="/forbidden" replace />;
 
   return <Outlet />;
