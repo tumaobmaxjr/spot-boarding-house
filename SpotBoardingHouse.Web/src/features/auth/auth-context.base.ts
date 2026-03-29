@@ -5,7 +5,7 @@ export type AuthContextType = {
   isAuthenticated: boolean;
   role: string | null;
   login: (payload: LoginRequest) => Promise<void>;
-  logout: () => void;
+  logout: (markExpired?: boolean) => void;
 };
 
 export const AuthContext = createContext<AuthContextType | null>(null);

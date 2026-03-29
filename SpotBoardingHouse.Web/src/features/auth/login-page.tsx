@@ -1,9 +1,10 @@
 import { useLocation, useNavigate, type To } from "react-router-dom";
 import { useAuth } from "./use-auth";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Box, Stack } from "@mui/system";
 import { Alert, Button, Paper, TextField, Typography } from "@mui/material";
 import type { AxiosError } from "axios";
+import { consumeSessionExpired } from "../../lib/auth";
 
 export function LoginPage() {
   const { login } = useAuth();
@@ -13,9 +14,35 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const location = useLocation();
-  const from: To =
-    (location.state as { from?: { pathname?: string } } | null)?.from
-      ?.pathname ?? "/";
+  const fromState = location.state as
+    | { reason?: string; from?: To }
+    | null;
+  const [showSessionExpired] = useState(() => {
+    const reasonFromState = fromState?.reason === "session-expired";
+    const reasonFromQuery = new URLSearchParams(location.search).get("reason");
+    return (
+      reasonFromState ||
+      reasonFromQuery === "session-expired" ||
+      consumeSessionExpired()
+    );
+  });
+  const from: To = fromState?.from ?? "/";
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    if (searchParams.get("reason") === "session-expired") {
+      searchParams.delete("reason");
+      const nextSearch = searchParams.toString();
+      navigate(
+        {
+          pathname: location.pathname,
+          search: nextSearch ? `?${nextSearch}` : "",
+          hash: location.hash,
+        },
+        { replace: true, state: location.state },
+      );
+    }
+  }, [location.hash, location.pathname, location.search, location.state, navigate]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +77,11 @@ export function LoginPage() {
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           Use your admin account.
         </Typography>
+        {showSessionExpired && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Session expired, please sign in again.
+          </Alert>
+        )}
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}

@@ -6,6 +6,7 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
+import { useEffect } from "react";
 import {
   Alert,
   Box,
@@ -18,6 +19,7 @@ import { useAuth } from "../features/auth/use-auth";
 import { UsersPage } from "../features/users/users-page";
 import { LoginPage } from "../features/auth/login-page";
 import { RolesPage } from "../features/roles/roles-page";
+import { getToken, isTokenExpired } from "../lib/auth";
 
 function Shell({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, role, logout } = useAuth();
@@ -77,11 +79,46 @@ function GuestOnlyRoute() {
 }
 
 function ProtectedAdminRoute() {
-  const { isAuthenticated, role } = useAuth();
+  const { isAuthenticated, role, logout } = useAuth();
   const location = useLocation();
+  const token = getToken();
+  const hasExpiredToken = !!token && isTokenExpired(token);
+
+  useEffect(() => {
+    if (hasExpiredToken) {
+      logout(true);
+    }
+  }, [hasExpiredToken, logout]);
+
+  if (hasExpiredToken) {
+    const from = {
+      pathname: location.pathname,
+      search: location.search,
+      hash: location.hash,
+    };
+    return (
+      <Navigate
+        to="/login?reason=session-expired"
+        replace
+        state={{ from, reason: "session-expired" }}
+      />
+    );
+  }
 
   if (!isAuthenticated)
-    return <Navigate to="/login" replace state={{ from: location }} />;
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{
+          from: {
+            pathname: location.pathname,
+            search: location.search,
+            hash: location.hash,
+          },
+        }}
+      />
+    );
   if (role !== "Admin") return <Navigate to="/forbidden" replace />;
 
   return <Outlet />;

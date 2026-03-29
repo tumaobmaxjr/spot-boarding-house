@@ -1,12 +1,17 @@
 import { api } from "../../lib/api";
-import { clearToken, decodeToken, getToken, saveToken } from "../../lib/auth";
+import {
+  clearAuthSession,
+  decodeToken,
+  getToken,
+  isTokenExpired,
+  saveToken,
+} from "../../lib/auth";
 import type { LoginRequest, LoginResponse } from "./types";
 import { AuthContext } from "./auth-context.base";
 import { useMemo, useState } from "react";
 
-function readRoleFromStorage(): string | null {
-  const token = getToken();
-  if (!token) return null;
+function readRoleFromToken(token: string): string | null {
+  if (isTokenExpired(token)) return null;
 
   try {
     const payload = decodeToken(token);
@@ -20,9 +25,27 @@ function readRoleFromStorage(): string | null {
   }
 }
 
+function readAuthStateFromStorage(): {
+  isAuthenticated: boolean;
+  role: string | null;
+} {
+  const token = getToken();
+  if (!token) return { isAuthenticated: false, role: null };
+
+  if (isTokenExpired(token)) {
+    clearAuthSession(true);
+    return { isAuthenticated: false, role: null };
+  }
+
+  return { isAuthenticated: true, role: readRoleFromToken(token) };
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(!!getToken());
-  const [role, setRole] = useState<string | null>(readRoleFromStorage());
+  const initialAuthState = readAuthStateFromStorage();
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    initialAuthState.isAuthenticated,
+  );
+  const [role, setRole] = useState<string | null>(initialAuthState.role);
 
   const login = async (payload: LoginRequest) => {
     const { data } = await api.post<LoginResponse>(
@@ -31,11 +54,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
     saveToken(data.accessToken);
     setIsAuthenticated(true);
-    setRole(data.role || readRoleFromStorage());
+    setRole(data.role || readRoleFromToken(data.accessToken));
   };
 
-  const logout = () => {
-    clearToken();
+  const logout = (markExpired = false) => {
+    clearAuthSession(markExpired);
     setIsAuthenticated(false);
     setRole(null);
   };
