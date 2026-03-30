@@ -17,7 +17,8 @@ namespace SpotBoardingHouse.Infrastructure.Data.Configurations
                 .HasMaxLength(50);
 
             builder.HasIndex(r => r.Name)
-                .IsUnique();
+                .IsUnique()
+                .HasFilter("[IsDeleted] = 0");
 
             builder.Property(r => r.Description)
                 .HasMaxLength(500);

@@ -25,7 +25,8 @@ namespace SpotBoardingHouse.Infrastructure.Data.Configurations
                 .HasMaxLength(50);
 
             builder.HasIndex(u => u.Email)
-                .IsUnique();
+                .IsUnique()
+                .HasFilter("[IsDeleted] = 0");
 
             builder.Property(u => u.PasswordHash)
                 .IsRequired()

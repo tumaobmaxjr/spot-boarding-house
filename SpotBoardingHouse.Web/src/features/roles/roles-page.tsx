@@ -22,21 +22,8 @@ import {
 import { useState } from "react";
 import { RoleDialog } from "./role-dialog";
 import { Edit, Delete } from "@mui/icons-material";
-
-function formatDateTime(value: string | null) {
-  if (!value) return "-";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-
-  return new Intl.DateTimeFormat(undefined, {
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-    second: "numeric",
-  }).format(date);
-}
+import type { AxiosError } from "axios";
+import { formatDateTime } from "../../lib/format-date";
 
 export function RolesPage() {
   const { data, isLoading, isError, error } = useRolesQuery();
@@ -50,6 +37,8 @@ export function RolesPage() {
     name: string;
     description: string | null;
   } | null>(null);
+
+  const [dialogKey, setDialogKey] = useState(0);
 
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -70,6 +59,7 @@ export function RolesPage() {
     );
 
   const handleCreate = () => {
+    setDialogKey((key) => key + 1);
     setEditingRole(null);
     setDialogOpen(true);
   };
@@ -92,10 +82,11 @@ export function RolesPage() {
         message: "Role deleted successfully.",
         severity: "success",
       });
-    } catch {
+    } catch (err) {
+      const axiosError = err as AxiosError<{ message?: string }>;
       setSnackbar({
         open: true,
-        message: "Failed to delete role.",
+        message: axiosError.response?.data?.message ?? "Failed to delete role.",
         severity: "error",
       });
     }
@@ -128,10 +119,11 @@ export function RolesPage() {
         });
       }
       setDialogOpen(false);
-    } catch {
+    } catch (err) {
+      const axiosError = err as AxiosError<{ message?: string }>;
       setSnackbar({
         open: true,
-        message: "Operation failed.",
+        message: axiosError.response?.data?.message ?? "Operation failed.",
         severity: "error",
       });
     }
@@ -190,7 +182,7 @@ export function RolesPage() {
       </Table>
 
       <RoleDialog
-        key={editingRole?.id ?? "new"}
+        key={dialogKey}
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
         onSubmit={handleSubmit}
@@ -199,6 +191,7 @@ export function RolesPage() {
       />
 
       <Snackbar
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         open={snackbar.open}
         autoHideDuration={3000}
         onClose={() => setSnackbar((s) => ({ ...s, open: false }))}

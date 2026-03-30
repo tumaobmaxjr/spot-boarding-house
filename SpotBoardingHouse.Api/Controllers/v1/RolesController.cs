@@ -46,9 +46,9 @@ namespace SpotBoardingHouse.Api.Controllers.v1
                 var role = await _roleService.CreateAsync(createRoleDto);
                 return CreatedAtAction(nameof(GetById), new { id = role.Id }, role);
             }
-            catch (Exception ex)
+            catch (InvalidOperationException ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { message = ex.Message });
             }
         }
 
@@ -65,9 +65,9 @@ namespace SpotBoardingHouse.Api.Controllers.v1
 
                 return Ok(updated);
             }
-            catch (Exception ex)
+            catch (InvalidOperationException ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { message = ex.Message });
             }
         }
 

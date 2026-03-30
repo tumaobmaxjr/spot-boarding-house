@@ -23,21 +23,8 @@ import {
 import { useState } from "react";
 import { Delete, Edit } from "@mui/icons-material";
 import { UserDialog } from "./user-dialog";
-
-function formatDateTime(value: string | null) {
-  if (!value) return "-";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-
-  return new Intl.DateTimeFormat(undefined, {
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-    second: "numeric",
-  }).format(date);
-}
+import type { AxiosError } from "axios";
+import { formatDateTime } from "../../lib/format-date";
 
 export function UsersPage() {
   const { data, isLoading, isError, error } = useUsersQuery();
@@ -54,6 +41,8 @@ export function UsersPage() {
     lastName: string;
     email: string;
   } | null>(null);
+
+  const [dialogKey, setDialogKey] = useState(0);
 
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -74,6 +63,7 @@ export function UsersPage() {
     );
 
   const handleCreate = () => {
+    setDialogKey((key) => key + 1);
     setEditingUser(null);
     setDialogOpen(true);
   };
@@ -98,10 +88,11 @@ export function UsersPage() {
         message: "User deleted successfully.",
         severity: "success",
       });
-    } catch {
+    } catch (err) {
+      const axiosError = err as AxiosError<{ message?: string }>;
       setSnackbar({
         open: true,
-        message: "Failed to delete user.",
+        message: axiosError.response?.data?.message ?? "Failed to delete user.",
         severity: "error",
       });
     }
@@ -137,10 +128,11 @@ export function UsersPage() {
         });
       }
       setDialogOpen(false);
-    } catch {
+    } catch (err) {
+      const axiosError = err as AxiosError<{ message?: string }>;
       setSnackbar({
         open: true,
-        message: "Operation failed.",
+        message: axiosError.response?.data?.message ?? "Operation failed.",
         severity: "error",
       });
     }
@@ -203,7 +195,7 @@ export function UsersPage() {
       </Table>
 
       <UserDialog
-        key={editingUser?.id ?? "new"}
+        key={dialogKey}
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
         onSubmit={handleSubmit}
@@ -213,6 +205,7 @@ export function UsersPage() {
       />
 
       <Snackbar
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         open={snackbar.open}
         autoHideDuration={3000}
         onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
