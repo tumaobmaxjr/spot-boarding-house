@@ -116,6 +116,7 @@ namespace SpotBoardingHouse.Application.Services
             {
                 Id = user.Id,
                 RoleId = user.RoleId,
+                RoleName = user.Role.Name,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Email = user.Email,

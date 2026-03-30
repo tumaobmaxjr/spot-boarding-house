@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (payload: LoginRequest) => {
     const { data } = await api.post<LoginResponse>(
-      "/api/v1/Auth/login",
+      "/api/v1/auth/login",
       payload,
     );
     saveToken(data.accessToken);

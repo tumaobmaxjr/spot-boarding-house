@@ -1,7 +1,11 @@
 import {
   Alert,
+  Box,
+  Button,
   CircularProgress,
+  IconButton,
   Paper,
+  Snackbar,
   Table,
   TableBody,
   TableCell,
@@ -9,7 +13,16 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import { useUsersQuery } from "./queries";
+import {
+  useCreateUser,
+  useDeleteUser,
+  useRolesQuery,
+  useUpdateUser,
+  useUsersQuery,
+} from "./queries";
+import { useState } from "react";
+import { Delete, Edit } from "@mui/icons-material";
+import { UserDialog } from "./user-dialog";
 
 function formatDateTime(value: string | null) {
   if (!value) return "-";
@@ -28,6 +41,29 @@ function formatDateTime(value: string | null) {
 
 export function UsersPage() {
   const { data, isLoading, isError, error } = useUsersQuery();
+  const { data: roles } = useRolesQuery();
+  const createUser = useCreateUser();
+  const updateUser = useUpdateUser();
+  const deleteUser = useDeleteUser();
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<{
+    id: string;
+    roleId: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  } | null>(null);
+
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error";
+  }>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   if (isLoading) return <CircularProgress />;
   if (isError)
@@ -37,11 +73,96 @@ export function UsersPage() {
       </Alert>
     );
 
+  const handleCreate = () => {
+    setEditingUser(null);
+    setDialogOpen(true);
+  };
+
+  const handleEdit = (user: {
+    id: string;
+    roleId: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  }) => {
+    setEditingUser(user);
+    setDialogOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
+    try {
+      await deleteUser.mutateAsync(id);
+      setSnackbar({
+        open: true,
+        message: "User deleted successfully.",
+        severity: "success",
+      });
+    } catch {
+      setSnackbar({
+        open: true,
+        message: "Failed to delete user.",
+        severity: "error",
+      });
+    }
+  };
+
+  const handleSubmit = async (payload: {
+    roleId: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    password?: string;
+  }) => {
+    try {
+      if (editingUser) {
+        await updateUser.mutateAsync({ id: editingUser.id, payload });
+        setSnackbar({
+          open: true,
+          message: "User updated successfully.",
+          severity: "success",
+        });
+      } else {
+        await createUser.mutateAsync({
+          roleId: payload.roleId,
+          firstName: payload.firstName,
+          lastName: payload.lastName,
+          email: payload.email,
+          password: payload.password ?? "",
+        });
+        setSnackbar({
+          open: true,
+          message: "User created successfully.",
+          severity: "success",
+        });
+      }
+      setDialogOpen(false);
+    } catch {
+      setSnackbar({
+        open: true,
+        message: "Operation failed.",
+        severity: "error",
+      });
+    }
+  };
+
   return (
     <Paper sx={{ p: 2 }}>
-      <Typography variant="h6" sx={{ mb: 2 }}>
-        Users
-      </Typography>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+        }}
+      >
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Users
+        </Typography>
+        <Button variant="contained" size="small" onClick={handleCreate}>
+          + New User
+        </Button>
+      </Box>
       <Table size="small">
         <TableHead>
           <TableRow>
@@ -51,6 +172,7 @@ export function UsersPage() {
             <TableCell>Role</TableCell>
             <TableCell>Created At</TableCell>
             <TableCell>Updated At</TableCell>
+            <TableCell align="right">Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -62,10 +184,46 @@ export function UsersPage() {
               <TableCell>{user.roleName}</TableCell>
               <TableCell>{formatDateTime(user.createdAt)}</TableCell>
               <TableCell>{formatDateTime(user.updatedAt)}</TableCell>
+              <TableCell align="right">
+                <IconButton size="small" onClick={() => handleEdit(user)}>
+                  <Edit fontSize="small" />
+                </IconButton>
+                <IconButton
+                  size="small"
+                  color="error"
+                  onClick={() => handleDelete(user.id)}
+                  disabled={deleteUser.isPending}
+                >
+                  <Delete fontSize="small" />
+                </IconButton>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+
+      <UserDialog
+        key={editingUser?.id ?? "new"}
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        onSubmit={handleSubmit}
+        initialData={editingUser}
+        roles={roles ?? []}
+        isLoading={createUser.isPending || updateUser.isPending}
+      />
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+      >
+        <Alert
+          severity={snackbar.severity}
+          onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Paper>
   );
 }

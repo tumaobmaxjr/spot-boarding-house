@@ -54,9 +54,13 @@ namespace SpotBoardingHouse.Application.Services
                 return null;
             }
 
-            if (!string.IsNullOrEmpty(updateRoleDto.Name) && await _roleRepository.NameExistsAsync(updateRoleDto.Name, id))
+            if (!string.IsNullOrEmpty(updateRoleDto.Name))
             {
-                throw new InvalidOperationException($"Role with name '{updateRoleDto.Name}' already exists.");
+                if (await _roleRepository.NameExistsAsync(updateRoleDto.Name, id))
+                {
+                    throw new InvalidOperationException($"Role with name '{updateRoleDto.Name}' already exists.");
+                }
+                existing.Name = updateRoleDto.Name;
             }
 
             if (updateRoleDto.Description != null)
