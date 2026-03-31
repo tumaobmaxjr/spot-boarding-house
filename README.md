@@ -42,7 +42,7 @@ dotnet user-secrets set "SeedAdmin:Password" "YourStrongPassword123!" --project 
 3. Database Migaration
 Ensure your connection string in appsettings.Development.json is correct, then update the database:
 ```
-dotnet ef database update --project Project.Infrastructure --startup-project Project.Api
+dotnet ef database update --project SpotBoardingHouse.Infrastructure --startup-project SpotBoardingHouse.Api
 ```
 
 4. Run API (HTTPS profile):
@@ -61,7 +61,7 @@ npm install
 ```
 
 2. Environment Configuration:
-Create a `.env.development` file in the `Project.Web` folder:
+Create a `.env.development` file in the `SpotBoardingHouse.Web` folder:
 ```
 VITE_API_URL=https://localhost:7289
 ```
@@ -80,13 +80,40 @@ https://localhost:5173 (optional if using https dev server)
 ```
 
 ## Authentication
-- Login endpoint: `POST /api/v1/Auth/login`
-- JWT token is required for protected admin endpoints:
-  `/api/v1/Users`
-  `/api/v1/Roles`
 
-- Admin seed user email defaults to: `admin@spotboardinghouse.com`
-- Password: Defined in your local User Secrets (`SeedAdmin:Password`).
+### Endpoints
+| Methods   | Endpoint                | Description                 |
+| :-------: | ----------------------- | --------------------------- |
+| POST      | /api/v1/auth/login      | Sign in with email/password |
+| POST      | /api/v1/auth/register   | Create new account          |
+
+### Roles
+| Role       | Description                                       |
+| :--------: | ------------------------------------------------- |
+| Admin      | System administrator (seeded on startup)          |
+| Owner      | Boarding house owner (assigned on registration)   |
+
+## Seed Admin User
+- Email: admin@spotboardinghouse.com
+- Password: Defined in your local User Secrets (SeedAdmin:Password)
+
+## Session Management
+- JWT tokens expire after configured duration (default: 60 minutes)
+- Expired sessions auto-redirect to sign in page
+- 401 responses clear the session and redirect to /login
+
+## Features
+
+### Roles Management
+- Create, read, update, delete roles
+- Soft delete support
+- Duplicate name validation
+- 
+### Users Management
+- Create, read, update, delete users
+- Assign roles to users
+- Soft delete support
+- Duplicate email validation
 
 ## Development Workflow
 - Run backend and frontend in separate terminals
@@ -100,17 +127,23 @@ dotnet build
 ```
 
 Run API:
-```bash
+```
 dotnet run --project "SpotBoardingHouse.Api" --launch-profile https
 ```
 
 Frontend dev:
-```bash
+```
 cd SpotBoardingHouse.Web
 npm run dev
 ```
 
 Frontend build:
-```bash
+```
 npm run build
+```
+
+Frontend tests:
+```
+cd SpotBoardingHouse.Web
+npm test
 ```
