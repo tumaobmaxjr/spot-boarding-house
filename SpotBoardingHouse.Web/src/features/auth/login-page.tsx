@@ -9,14 +9,12 @@ import { consumeSessionExpired } from "../../lib/auth";
 export function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("admin@spotboardinghouse.com");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const location = useLocation();
-  const fromState = location.state as
-    | { reason?: string; from?: To }
-    | null;
+  const fromState = location.state as { reason?: string; from?: To } | null;
   const [showSessionExpired] = useState(() => {
     const reasonFromState = fromState?.reason === "session-expired";
     const reasonFromQuery = new URLSearchParams(location.search).get("reason");
@@ -42,7 +40,13 @@ export function LoginPage() {
         { replace: true, state: location.state },
       );
     }
-  }, [location.hash, location.pathname, location.search, location.state, navigate]);
+  }, [
+    location.hash,
+    location.pathname,
+    location.search,
+    location.state,
+    navigate,
+  ]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,7 +65,7 @@ export function LoginPage() {
       } else if (!axiosError.response) {
         setError("Cannot connect to the API.");
       } else {
-        setError(axiosError.response.data?.message ?? "Login failed.");
+        setError(axiosError.response.data?.message ?? "Sign in failed.");
       }
     } finally {
       setSubmitting(false);
@@ -75,7 +79,7 @@ export function LoginPage() {
           Sign in
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Use your admin account.
+          Sign in to your account.
         </Typography>
         {showSessionExpired && (
           <Alert severity="info" sx={{ mb: 2 }}>
@@ -105,6 +109,9 @@ export function LoginPage() {
             />
             <Button type="submit" variant="contained" disabled={submitting}>
               {submitting ? "Signing in..." : "Sign in"}
+            </Button>
+            <Button variant="text" onClick={() => navigate("/register")}>
+              Don't have an account? Register
             </Button>
           </Stack>
         </form>

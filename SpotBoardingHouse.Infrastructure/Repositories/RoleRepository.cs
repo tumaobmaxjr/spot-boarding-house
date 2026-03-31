@@ -28,6 +28,12 @@ namespace SpotBoardingHouse.Infrastructure.Repositories
                 .FirstOrDefaultAsync(r => r.Id == id && !r.IsDeleted);
         }
 
+        public async Task<Role?> GetByNameAsync(string name)
+        {
+            return await _context.Roles
+                .FirstOrDefaultAsync(r => r.Name == name && !r.IsDeleted);
+        }
+
         public async Task<Role> AddAsync(Role role)
         {
             _context.Roles.Add(role);

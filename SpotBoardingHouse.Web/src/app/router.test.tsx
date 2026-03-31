@@ -2,7 +2,10 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { AppRouter } from "./router";
-import { AuthContext, type AuthContextType } from "../features/auth/auth-context.base";
+import {
+  AuthContext,
+  type AuthContextType,
+} from "../features/auth/auth-context.base";
 import * as authLib from "../lib/auth";
 
 describe("ProtectedAdminRoute", () => {
@@ -15,6 +18,7 @@ describe("ProtectedAdminRoute", () => {
       isAuthenticated: false,
       role: null,
       login: vi.fn(),
+      register: vi.fn(),
       logout,
     };
 

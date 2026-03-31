@@ -11,19 +11,24 @@ namespace SpotBoardingHouse.Infrastructure.Data.Seeders
             IConfiguration configuration,
             CancellationToken cancellationToken = default)
         {
-            var hasAdminRole = await context.Roles
-                .AnyAsync(r => r.Name == "Admin" && !r.IsDeleted, cancellationToken);
 
-            if (hasAdminRole)
+            if (!await context.Roles.AnyAsync(r => r.Name == "Admin" && !r.IsDeleted, cancellationToken))
             {
-                return;
+                context.Roles.Add(new Role
+                {
+                    Name = "Admin",
+                    Description = "System administrator"
+                });
             }
 
-            context.Roles.Add(new Role
+            if (!await context.Roles.AnyAsync(r => r.Name == "Owner" && !r.IsDeleted, cancellationToken))
             {
-                Name = "Admin",
-                Description = "System administrator"
-            });
+                context.Roles.Add(new Role
+                {
+                    Name = "Owner",
+                    Description = "Boarding house owner"
+                });
+            }
 
             await context.SaveChangesAsync(cancellationToken);
         }

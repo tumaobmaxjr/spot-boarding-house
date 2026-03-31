@@ -22,7 +22,7 @@ namespace SpotBoardingHouse.Infrastructure.Data.Configurations
 
             builder.Property(u => u.Email)
                 .IsRequired()
-                .HasMaxLength(50);
+                .HasMaxLength(255);
 
             builder.HasIndex(u => u.Email)
                 .IsUnique()

@@ -8,6 +8,7 @@ namespace SpotBoardingHouse.Api.Controllers.v1
 {
     [ApiController]
     [ApiVersion("1.0")]
+    [AllowAnonymous]
     [Route("api/v{version:apiVersion}/[controller]")]
     public class AuthController : ControllerBase
     {
@@ -18,7 +19,6 @@ namespace SpotBoardingHouse.Api.Controllers.v1
             _authService = authService;
         }
 
-        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<ActionResult<LoginResponseDto>> Login([FromBody] LoginRequestDto loginRequest)
         {
@@ -30,6 +30,25 @@ namespace SpotBoardingHouse.Api.Controllers.v1
             }
 
             return Ok(result);
+        }
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterRequestDto registerRequest)
+        {
+            try
+            {
+                var response = await _authService.RegisterAsync(registerRequest);
+                if (response == null)
+                {
+                    return BadRequest(new { message = "Register failed." });
+                }
+
+                return Ok(response);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
 }

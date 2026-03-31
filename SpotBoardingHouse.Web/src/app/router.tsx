@@ -18,6 +18,7 @@ import {
 import { useAuth } from "../features/auth/use-auth";
 import { UsersPage } from "../features/users/users-page";
 import { LoginPage } from "../features/auth/login-page";
+import { RegisterPage } from "../features/auth/register-page";
 import { RolesPage } from "../features/roles/roles-page";
 import { getToken, isTokenExpired } from "../lib/auth";
 
@@ -56,7 +57,7 @@ function Shell({ children }: { children: React.ReactNode }) {
               </Button>
             ) : (
               <Button variant="contained" onClick={() => navigate("/login")}>
-                Login
+                Sign in
               </Button>
             )}
           </Stack>
@@ -134,6 +135,7 @@ export function AppRouter() {
       <Routes>
         <Route element={<GuestOnlyRoute />}>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
         </Route>
 
         <Route element={<ProtectedAdminRoute />}>

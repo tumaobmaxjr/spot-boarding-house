@@ -6,7 +6,7 @@ import {
   isTokenExpired,
   saveToken,
 } from "../../lib/auth";
-import type { LoginRequest, LoginResponse } from "./types";
+import type { LoginRequest, LoginResponse, RegisterRequest } from "./types";
 import { AuthContext } from "./auth-context.base";
 import { useMemo, useState } from "react";
 
@@ -57,6 +57,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setRole(data.role || readRoleFromToken(data.accessToken));
   };
 
+  const register = async (payload: RegisterRequest) => {
+    const { data } = await api.post<LoginResponse>(
+      "/api/v1/auth/register",
+      payload,
+    );
+    saveToken(data.accessToken);
+    setIsAuthenticated(true);
+    setRole(data.role || readRoleFromToken(data.accessToken));
+  };
+
   const logout = (markExpired = false) => {
     clearAuthSession(markExpired);
     setIsAuthenticated(false);
@@ -64,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const value = useMemo(
-    () => ({ isAuthenticated, role, login, logout }),
+    () => ({ isAuthenticated, role, login, register, logout }),
     [isAuthenticated, role],
   );
 

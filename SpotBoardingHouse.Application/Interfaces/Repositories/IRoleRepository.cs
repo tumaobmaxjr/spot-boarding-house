@@ -6,6 +6,7 @@ namespace SpotBoardingHouse.Application.Interfaces.Repositories
     {
         Task<IEnumerable<Role>> GetAllAsync();
         Task<Role?> GetByIdAsync(Guid id);
+        Task<Role?> GetByNameAsync(string name);
         Task<Role> AddAsync(Role role);
         Task UpdateAsync(Role role);
         Task DeleteAsync(Guid id);
