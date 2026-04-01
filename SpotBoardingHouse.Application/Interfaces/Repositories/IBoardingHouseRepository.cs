@@ -1,0 +1,15 @@
+﻿using SpotBoardingHouse.Domain.Entity;
+
+namespace SpotBoardingHouse.Application.Interfaces.Repositories
+{
+    public interface IBoardingHouseRepository
+    {
+        Task<IEnumerable<BoardingHouse>> GetAllByUserIdAsync(Guid userId);
+        Task<BoardingHouse?> GetByIdAsync(Guid id);
+        Task<BoardingHouse> AddAsync(BoardingHouse boardingHouse);
+        Task UpdateAsync(BoardingHouse boardingHouse);
+        Task DeleteAsync(Guid id);
+        Task<bool> ExistsAsync(Guid id);
+        Task<bool> NameExistsForUserAsync(string name, Guid userId, Guid? excludedId = null);
+    }
+}
