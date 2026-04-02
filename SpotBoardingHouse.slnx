@@ -6,8 +6,8 @@
     <Project Path="src/SpotBoardingHouse.Infrastructure/SpotBoardingHouse.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/SpotBoardingHouse.Api.IntegrationTests/SpotBoardingHouse.Api.IntegrationTests.csproj" Id="24c9defb-5a44-46ad-8c21-4a1c783fdf5b" />
-    <Project Path="tests/SpotBoardingHouse.Application.Tests/SpotBoardingHouse.Application.Tests.csproj" Id="a63e495a-c556-44f8-bc82-f5458ab4ebe0" />
-    <Project Path="tests/SpotBoardingHouse.Infrastructure.Tests/SpotBoardingHouse.Infrastructure.Tests.csproj" Id="40282bb3-eb88-4742-8cc0-9a2435ddbc48" />
+    <Project Path="tests/SpotBoardingHouse.Api.IntegrationTests/SpotBoardingHouse.Api.IntegrationTests.csproj" Id="1b735c92-0a0b-4b03-8c8b-11556d6eb041" />
+    <Project Path="tests/SpotBoardingHouse.Application.Tests/SpotBoardingHouse.Application.Tests.csproj" Id="0250fd94-0cab-451a-8d14-5c1977bd4a42" />
+    <Project Path="tests/SpotBoardingHouse.Infrastructure.Tests/SpotBoardingHouse.Infrastructure.Tests.csproj" Id="ea170026-270c-4246-9f99-521336970948" />
   </Folder>
 </Solution>

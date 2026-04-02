@@ -97,6 +97,9 @@ namespace SpotBoardingHouse.Application.Services
             if (updateBoardingHouseDto.Longitude.HasValue)
                 existing.Longitude = updateBoardingHouseDto.Longitude.Value;
 
+            if (updateBoardingHouseDto.FacebookLink != null)
+                existing.FacebookLink = updateBoardingHouseDto.FacebookLink.Trim();
+
             existing.UpdatedAt = DateTime.UtcNow;
 
             await _boardingHouseRepository.UpdateAsync(existing);
