@@ -10,6 +10,7 @@ namespace SpotBoardingHouse.Infrastructure
         {
             services.AddScoped<IRoleRepository, RoleRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IBoardingHouseRepository, BoardingHouseRepository>();
             return services;
         }
     }

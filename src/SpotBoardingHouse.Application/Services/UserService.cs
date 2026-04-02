@@ -90,6 +90,16 @@ namespace SpotBoardingHouse.Application.Services
                 existing.PasswordHash = BCrypt.Net.BCrypt.HashPassword(updateUserDto.Password);
             }
 
+            if (updateUserDto.RoleId.HasValue)
+            {
+                if (!await _userRepository.RoleExistsAsync(updateUserDto.RoleId.Value))
+                {
+                    throw new InvalidOperationException("Role does not exist.");
+                }
+
+                existing.RoleId = updateUserDto.RoleId.Value;
+            }
+
             existing.UpdatedAt = DateTime.UtcNow;
 
             await _userRepository.UpdateAsync(existing);
