@@ -25,6 +25,7 @@ import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
+import type { OwnerDto } from "./types";
 
 const defaultIcon = L.icon({
   iconUrl: markerIcon,
@@ -47,6 +48,7 @@ interface BoardingHouseDialogProps {
     latitude: number;
     longitude: number;
     facebookLink?: string;
+    ownerId?: string;
   }) => void;
   initialData?: {
     id: string;
@@ -58,15 +60,9 @@ interface BoardingHouseDialogProps {
     longitude: number;
     facebookLink: string | null;
   } | null;
+  isAdmin?: boolean;
+  owners?: OwnerDto[];
   isLoading?: boolean;
-}
-
-function MapController({ center }: { center: [number, number] }) {
-  const map = useMap();
-  useEffect(() => {
-    map.setView(center, map.getZoom());
-  }, [center, map]);
-  return null;
 }
 
 function MapPicker({
@@ -97,11 +93,21 @@ function MapPicker({
   );
 }
 
+function MapController({ center }: { center: [number, number] }) {
+  const map = useMap();
+  useEffect(() => {
+    map.setView(center, map.getZoom());
+  }, [center, map]);
+  return null;
+}
+
 export function BoardingHouseDialog({
   open,
   onClose,
   onSubmit,
   initialData,
+  isAdmin,
+  owners,
   isLoading,
 }: BoardingHouseDialogProps) {
   const isEdit = !!initialData;
@@ -120,6 +126,7 @@ export function BoardingHouseDialog({
   const [facebookLink, setFacebookLink] = useState(
     initialData?.facebookLink ?? "",
   );
+  const [ownerId, setOwnerId] = useState(owners?.[0]?.id ?? "");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [locating, setLocating] = useState(false);
 
@@ -146,6 +153,7 @@ export function BoardingHouseDialog({
     if (!name.trim()) errs.name = "Name is required";
     if (!address.trim()) errs.address = "Address is required";
     if (!allowedGender) errs.allowedGender = "Gender is required";
+    if (isAdmin && !ownerId) errs.ownerId = "Owner is required";
     if (isNaN(latitude) || latitude < -90 || latitude > 90)
       errs.latitude = "Valid latitude required (-90 to 90)";
     if (isNaN(longitude) || longitude < -180 || longitude > 180)
@@ -165,6 +173,7 @@ export function BoardingHouseDialog({
       latitude,
       longitude,
       facebookLink: facebookLink.trim() || undefined,
+      ownerId: isAdmin ? ownerId : undefined,
     });
   };
 
@@ -188,6 +197,26 @@ export function BoardingHouseDialog({
             overflow: "visible",
           }}
         >
+          {isAdmin && !isEdit && (
+            <FormControl error={!!errors.ownerId} fullWidth>
+              <InputLabel>Owner</InputLabel>
+              <Select
+                value={ownerId}
+                onChange={(e) => setOwnerId(e.target.value)}
+                label="Owner"
+              >
+                {owners?.map((owner) => (
+                  <MenuItem key={owner.id} value={owner.id}>
+                    {owner.firstName} {owner.lastName}
+                  </MenuItem>
+                ))}
+              </Select>
+              {errors.ownerId && (
+                <FormHelperText>{errors.ownerId}</FormHelperText>
+              )}
+            </FormControl>
+          )}
+
           <TextField
             label="Name"
             value={name}
@@ -281,8 +310,26 @@ export function BoardingHouseDialog({
               width: "100%",
               borderRadius: 8,
               overflow: "hidden",
+              position: "relative",
             }}
           >
+            {locating && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  background: "white",
+                  padding: "4px 8px",
+                  borderRadius: 4,
+                  fontSize: 12,
+                  zIndex: 1000,
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                }}
+              >
+                Getting your location...
+              </div>
+            )}
             <MapContainer
               center={[latitude, longitude]}
               zoom={13}

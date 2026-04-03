@@ -1,6 +1,7 @@
 export type BoardingHouseDto = {
   id: string;
   userId: string;
+  ownerName?: string;
   name: string;
   description: string | null;
   allowedGender: string;
@@ -10,4 +11,11 @@ export type BoardingHouseDto = {
   facebookLink: string | null;
   createdAt: string;
   updatedAt: string | null;
+};
+
+export type OwnerDto = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
 };

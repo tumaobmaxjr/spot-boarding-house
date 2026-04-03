@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Edit, Delete } from "@mui/icons-material";
 import {
   Alert,
@@ -15,18 +16,22 @@ import {
   Typography,
 } from "@mui/material";
 import type { AxiosError } from "axios";
-import { useState } from "react";
 import { formatDateTime } from "../../lib/format-date";
-import { BoardingHouseDialog } from "./boarding-house-dialog";
+import { useAuth } from "../auth/use-auth";
 import {
-  useCreateBoardingHouse,
-  useUpdateBoardingHouse,
-  useDeleteBoardingHouse,
   useBoardingHousesQuery,
+  useCreateBoardingHouse,
+  useDeleteBoardingHouse,
+  useUpdateBoardingHouse,
+  useOwnersQuery,
 } from "./queries";
+import { BoardingHouseDialog } from "./boarding-house-dialog";
 
 export function BoardingHousesPage() {
+  const { role } = useAuth();
+  const isAdmin = role === "Admin";
   const { data, isLoading, isError, error } = useBoardingHousesQuery();
+  const { data: owners } = useOwnersQuery();
   const createBoardingHouse = useCreateBoardingHouse();
   const updateBoardingHouse = useUpdateBoardingHouse();
   const deleteBoardingHouse = useDeleteBoardingHouse();
@@ -59,7 +64,7 @@ export function BoardingHousesPage() {
     );
 
   const handleCreate = () => {
-    setDialogKey((k) => k + 1);
+    setDialogKey((k: number) => k + 1);
     setEditingBoardingHouse(null);
     setDialogOpen(true);
   };
@@ -74,7 +79,7 @@ export function BoardingHousesPage() {
     longitude: number;
     facebookLink: string | null;
   }) => {
-    setDialogKey((k) => k + 1);
+    setDialogKey((k: number) => k + 1);
     setEditingBoardingHouse(bh);
     setDialogOpen(true);
   };
@@ -109,6 +114,7 @@ export function BoardingHousesPage() {
     latitude: number;
     longitude: number;
     facebookLink?: string;
+    ownerId?: string;
   }) => {
     try {
       if (editingBoardingHouse) {
@@ -150,7 +156,9 @@ export function BoardingHousesPage() {
           mb: 2,
         }}
       >
-        <Typography variant="h6">Boarding Houses</Typography>
+        <Typography variant="h6">
+          {isAdmin ? "All Boarding Houses" : "My Boarding Houses"}
+        </Typography>
         <Button variant="contained" size="small" onClick={handleCreate}>
           + New Boarding House
         </Button>
@@ -161,6 +169,7 @@ export function BoardingHousesPage() {
             <TableCell>Name</TableCell>
             <TableCell>Address</TableCell>
             <TableCell>Gender</TableCell>
+            {isAdmin && <TableCell>Owner</TableCell>}
             <TableCell>Location</TableCell>
             <TableCell>Created At</TableCell>
             <TableCell>Updated At</TableCell>
@@ -173,6 +182,7 @@ export function BoardingHousesPage() {
               <TableCell>{bh.name}</TableCell>
               <TableCell>{bh.address}</TableCell>
               <TableCell>{bh.allowedGender}</TableCell>
+              {isAdmin && <TableCell>{bh.ownerName ?? "-"}</TableCell>}
               <TableCell>
                 {bh.latitude.toFixed(4)}, {bh.longitude.toFixed(4)}
               </TableCell>
@@ -195,12 +205,15 @@ export function BoardingHousesPage() {
           ))}
         </TableBody>
       </Table>
+
       <BoardingHouseDialog
         key={dialogKey}
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
         onSubmit={handleSubmit}
         initialData={editingBoardingHouse}
+        isAdmin={isAdmin}
+        owners={owners ?? []}
         isLoading={
           createBoardingHouse.isPending || updateBoardingHouse.isPending
         }
