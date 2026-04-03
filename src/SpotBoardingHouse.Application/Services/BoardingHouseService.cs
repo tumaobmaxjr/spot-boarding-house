@@ -15,6 +15,12 @@ namespace SpotBoardingHouse.Application.Services
             _boardingHouseRepository = boardingHouseRepository;
         }
 
+        public async Task<IEnumerable<BoardingHouseDto>> GetAllAsync()
+        {
+            var boardingHouses = await _boardingHouseRepository.GetAllAsync();
+            return boardingHouses.Select(MapToDto);
+        }
+
         public async Task<IEnumerable<BoardingHouseDto>> GetAllByUserIdAsync(Guid id)
         {
             var boardingHouses = await _boardingHouseRepository.GetAllByUserIdAsync(id);
@@ -67,7 +73,8 @@ namespace SpotBoardingHouse.Application.Services
                 return null;
             }
 
-            if (!string.IsNullOrEmpty(updateBoardingHouseDto.Name) && await _boardingHouseRepository.NameExistsForUserAsync(updateBoardingHouseDto.Name, userId, id))
+            if (!string.IsNullOrEmpty(updateBoardingHouseDto.Name) &&
+                await _boardingHouseRepository.NameExistsForUserAsync(updateBoardingHouseDto.Name, existing.UserId, id))
             {
                 throw new InvalidOperationException($"Boarding house with name '{updateBoardingHouseDto.Name}' already exists.");
             }
@@ -109,12 +116,6 @@ namespace SpotBoardingHouse.Application.Services
 
         public async Task<bool> DeleteAsync(Guid id, Guid userId)
         {
-            var exists = await _boardingHouseRepository.ExistsAsync(id);
-            if (!exists)
-            {
-                return false;
-            }
-
             var boardingHouse = await _boardingHouseRepository.GetByIdAsync(id);
             if (boardingHouse == null || boardingHouse.UserId != userId)
             {
@@ -130,6 +131,8 @@ namespace SpotBoardingHouse.Application.Services
         {
             return new BoardingHouseDto
             {
+                OwnerName = boardingHouse.User != null ? $"{boardingHouse.User.FirstName} {boardingHouse.User.LastName}" : null,
+
                 Id = boardingHouse.Id,
                 UserId = boardingHouse.UserId,
                 Name = boardingHouse.Name,
@@ -140,7 +143,7 @@ namespace SpotBoardingHouse.Application.Services
                 Longitude = boardingHouse.Longitude,
                 FacebookLink = boardingHouse.FacebookLink,
                 CreatedAt = boardingHouse.CreatedAt,
-                UpdatedAt = boardingHouse.UpdatedAt
+                UpdatedAt = boardingHouse.UpdatedAt,
             };
         }
     }

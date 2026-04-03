@@ -4,6 +4,7 @@ namespace SpotBoardingHouse.Application.Interfaces.Services
 {
     public interface IBoardingHouseService
     {
+        Task<IEnumerable<BoardingHouseDto>> GetAllAsync();
         Task<IEnumerable<BoardingHouseDto>> GetAllByUserIdAsync(Guid id);
         Task<BoardingHouseDto?> GetByIdAsync(Guid id);
         Task<BoardingHouseDto> CreateAsync(Guid userId, CreateBoardingHouseDto creatingBoardingHouse);

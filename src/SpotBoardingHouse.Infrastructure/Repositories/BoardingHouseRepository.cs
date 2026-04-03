@@ -14,6 +14,15 @@ namespace SpotBoardingHouse.Infrastructure.Repositories
             _context = context;
         }
 
+        public async Task<IEnumerable<BoardingHouse>> GetAllAsync()
+        {
+            return await _context.BoardingHouses
+                .Include(bh => bh.User)
+                .Where(bh => !bh.IsDeleted)
+                .OrderBy(bh => bh.Name)
+                .ToListAsync();
+        }
+
         public async Task<IEnumerable<BoardingHouse>> GetAllByUserIdAsync(Guid userId)
         {
             return await _context.BoardingHouses
@@ -25,6 +34,7 @@ namespace SpotBoardingHouse.Infrastructure.Repositories
         public async Task<BoardingHouse?> GetByIdAsync(Guid id)
         {
             return await _context.BoardingHouses
+                .Include(bh => bh.User)
                 .FirstOrDefaultAsync(bh => bh.Id == id && !bh.IsDeleted);
         }
 

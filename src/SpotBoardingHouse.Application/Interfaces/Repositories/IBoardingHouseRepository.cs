@@ -4,6 +4,7 @@ namespace SpotBoardingHouse.Application.Interfaces.Repositories
 {
     public interface IBoardingHouseRepository
     {
+        Task<IEnumerable<BoardingHouse>> GetAllAsync();
         Task<IEnumerable<BoardingHouse>> GetAllByUserIdAsync(Guid userId);
         Task<BoardingHouse?> GetByIdAsync(Guid id);
         Task<BoardingHouse> AddAsync(BoardingHouse boardingHouse);
