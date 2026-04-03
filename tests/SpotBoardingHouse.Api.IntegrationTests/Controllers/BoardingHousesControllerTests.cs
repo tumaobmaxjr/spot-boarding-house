@@ -25,6 +25,24 @@ namespace SpotBoardingHouse.Api.IntegrationTests.Controllers
         }
 
         [Fact]
+        public async Task Create_WithOwnerId_ShouldReturn401_WhenNotAuthenticated()
+        {
+            var ownerId = Guid.NewGuid();
+            var dto = new CreateBoardingHouseDto
+            {
+                Name = "Test BH",
+                AllowedGender = "Mixed",
+                Address = "123 Test St",
+                Latitude = 14.5,
+                Longitude = 121.0
+            };
+
+            var response = await _client.PostAsJsonAsync($"{Endpoint}?ownerId={ownerId}", dto, TestContext.Current.CancellationToken);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        }
+
+        [Fact]
         public async Task Create_ShouldReturn401_WhenNotAuthenticated()
         {
             var dto = new CreateBoardingHouseDto

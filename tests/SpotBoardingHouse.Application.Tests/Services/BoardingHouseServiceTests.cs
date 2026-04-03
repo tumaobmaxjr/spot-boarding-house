@@ -364,12 +364,13 @@ namespace SpotBoardingHouse.Application.Tests.Services
             var id = Guid.NewGuid();
             var userId = Guid.NewGuid();
 
-            _repo.Setup(r => r.ExistsAsync(id)).ReturnsAsync(false);
+            _repo.Setup(r => r.GetByIdAsync(id)).ReturnsAsync((BoardingHouse?)null);
 
             var result = await _service.DeleteAsync(id, userId);
 
             result.Should().BeFalse();
-            _repo.Verify(r => r.GetByIdAsync(It.IsAny<Guid>()), Times.Never);
+            _repo.Verify(r => r.GetByIdAsync(id), Times.Once);
+            _repo.Verify(r => r.DeleteAsync(It.IsAny<Guid>()), Times.Never);
         }
     }
 }

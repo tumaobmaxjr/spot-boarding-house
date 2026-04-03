@@ -181,6 +181,52 @@ namespace SpotBoardingHouse.Infrastructure.Tests.Repositories
         }
 
         [Fact]
+        public async Task GetByIdAsync_ShouldIncludeUser_WhenFound()
+        {
+            using var context = CreateContext();
+            var repo = CreateRepository(context);
+
+            var role = new Role
+            {
+                Id = Guid.NewGuid(),
+                Name = "Owner"
+            };
+
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                RoleId = role.Id,
+                Role = role,
+                FirstName = "Max",
+                LastName = "Owner",
+                Email = "owner@test.com",
+                PasswordHash = "hash"
+            };
+
+            var boardingHouse = new BoardingHouse
+            {
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                User = user,
+                Name = "BH with owner",
+                AllowedGender = Gender.Mixed,
+                Address = "Addr"
+            };
+
+            await context.Roles.AddAsync(role, TestContext.Current.CancellationToken);
+            await context.Users.AddAsync(user, TestContext.Current.CancellationToken);
+            await context.BoardingHouses.AddAsync(boardingHouse, TestContext.Current.CancellationToken);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var result = await repo.GetByIdAsync(boardingHouse.Id);
+
+            result.Should().NotBeNull();
+            result!.User.Should().NotBeNull();
+            result.User.FirstName.Should().Be("Max");
+            result.User.LastName.Should().Be("Owner");
+        }
+
+        [Fact]
         public async Task ExistsAsync_ShouldReturnTrue_WhenActive()
         {
             using var context = CreateContext();
