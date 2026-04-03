@@ -8,6 +8,19 @@ import {
 } from "../features/auth/auth-context.base";
 import * as authLib from "../lib/auth";
 
+function renderWithAuth(
+  value: AuthContextType,
+  initialEntries: string[] = ["/"],
+) {
+  render(
+    <MemoryRouter initialEntries={initialEntries}>
+      <AuthContext.Provider value={value}>
+        <AppRouter />
+      </AuthContext.Provider>
+    </MemoryRouter>,
+  );
+}
+
 describe("ProtectedAdminRoute", () => {
   it("logs out and redirects to login when token is expired", async () => {
     vi.spyOn(authLib, "getToken").mockReturnValue("expired-token");
@@ -22,13 +35,7 @@ describe("ProtectedAdminRoute", () => {
       logout,
     };
 
-    render(
-      <MemoryRouter initialEntries={["/admin/users"]}>
-        <AuthContext.Provider value={value}>
-          <AppRouter />
-        </AuthContext.Provider>
-      </MemoryRouter>,
-    );
+    renderWithAuth(value, ["/admin/users"]);
 
     await waitFor(() => {
       expect(logout).toHaveBeenCalledWith(true);
@@ -41,5 +48,35 @@ describe("ProtectedAdminRoute", () => {
     expect(
       screen.getByText("Session expired, please sign in again."),
     ).toBeInTheDocument();
+  });
+});
+
+describe("ProtectedOwnerRoute", () => {
+  it("redirects Owner to boarding houses on home route", () => {
+    const value: AuthContextType = {
+      isAuthenticated: true,
+      role: "Owner",
+      login: vi.fn(),
+      register: vi.fn(),
+      logout: vi.fn(),
+    };
+
+    renderWithAuth(value, ["/"]);
+
+    expect(window.location.pathname).toBe("/boarding-houses");
+  });
+
+  it("redirects Admin to admin users on home route", () => {
+    const value: AuthContextType = {
+      isAuthenticated: true,
+      role: "Admin",
+      login: vi.fn(),
+      register: vi.fn(),
+      logout: vi.fn(),
+    };
+
+    renderWithAuth(value, ["/"]);
+
+    expect(window.location.pathname).toBe("/admin/users");
   });
 });

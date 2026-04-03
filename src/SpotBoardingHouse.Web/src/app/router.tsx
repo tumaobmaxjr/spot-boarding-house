@@ -21,6 +21,7 @@ import { LoginPage } from "../features/auth/login-page";
 import { RegisterPage } from "../features/auth/register-page";
 import { RolesPage } from "../features/roles/roles-page";
 import { getToken, isTokenExpired } from "../lib/auth";
+import { BoardingHousesPage } from "../features/boardinghouses/boarding-house-page";
 
 function Shell({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, role, logout } = useAuth();
@@ -43,6 +44,11 @@ function Shell({ children }: { children: React.ReactNode }) {
                 <Button onClick={() => navigate("/admin/users")}>Users</Button>
                 <Button onClick={() => navigate("/admin/roles")}>Roles</Button>
               </>
+            )}
+            {isAuthenticated && (role === "Owner" || role === "Admin") && (
+              <Button onClick={() => navigate("/boarding-houses")}>
+                Boarding Houses
+              </Button>
             )}
             {isAuthenticated ? (
               <Button
@@ -125,6 +131,57 @@ function ProtectedAdminRoute() {
   return <Outlet />;
 }
 
+function ProtectedOwnerRoute() {
+  const { isAuthenticated, role, logout } = useAuth();
+  const location = useLocation();
+  const token = getToken();
+  const hasExpiredToken = !!token && isTokenExpired(token);
+
+  useEffect(() => {
+    if (hasExpiredToken) {
+      logout(true);
+    }
+  }, [hasExpiredToken, logout]);
+  if (hasExpiredToken) {
+    const from = {
+      pathname: location.pathname,
+      search: location.search,
+      hash: location.hash,
+    };
+    return (
+      <Navigate
+        to="/login?reason=session-expired"
+        replace
+        state={{ from, reason: "session-expired" }}
+      />
+    );
+  }
+
+  if (!isAuthenticated)
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{
+          from: {
+            pathname: location.pathname,
+            search: location.search,
+            hash: location.hash,
+          },
+        }}
+      />
+    );
+  if (role !== "Owner" && role !== "Admin")
+    return <Navigate to="/forbidden" replace />;
+  return <Outlet />;
+}
+
+function HomeRedirect() {
+  const { role } = useAuth();
+  if (role === "Owner") return <Navigate to="/boarding-houses" replace />;
+  return <Navigate to="/admin/users" replace />;
+}
+
 function ForbiddenPage() {
   return <Alert severity="warning">Access denied.</Alert>;
 }
@@ -143,8 +200,12 @@ export function AppRouter() {
           <Route path="/admin/roles" element={<RolesPage />} />
         </Route>
 
+        <Route element={<ProtectedOwnerRoute />}>
+          <Route path="/boarding-houses" element={<BoardingHousesPage />} />
+        </Route>
+
         <Route path="/forbidden" element={<ForbiddenPage />} />
-        <Route path="/" element={<Navigate to="/admin/users" replace />} />
+        <Route path="/" element={<HomeRedirect />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Shell>
