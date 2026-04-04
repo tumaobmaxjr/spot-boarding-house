@@ -12,6 +12,7 @@ namespace SpotBoardingHouse.Infrastructure.Data.Seeders
             ISeeder[] seeders =
             [
                 new RoleSeeder(),
+                new RoomTypeSeeder(),
                 new AdminUserSeeder()
             ];
 
