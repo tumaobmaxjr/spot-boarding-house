@@ -1,19 +1,19 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using SpotBoardingHouse.Domain.Entity;
+using SpotBoardingHouse.Domain.Entities;
 
 namespace SpotBoardingHouse.Infrastructure.Data.Seeders
 {
     public class RoomTypeSeeder : ISeeder
     {
-        private static readonly (string Name, string? Description)[] Defaults = new[]
-        {
+        private static readonly (string Name, string? Description)[] Defaults =
+        [
             ("BedSpace", "Shared dormitory bed, per-person pricing"),
             ("Solo", "Private room for single occupant"),
             ("Double", "Private room with one large bed for two occupants"),
             ("Twin", "Private room with two separate beds"),
             ("Family", "Larger room suitable for families"),
-        };
+        ];
 
         public async Task SeedAsync(
             ApplicationDbContext context,
