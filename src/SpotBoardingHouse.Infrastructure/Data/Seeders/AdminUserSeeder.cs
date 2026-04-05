@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using SpotBoardingHouse.Domain.Entity;
+using SpotBoardingHouse.Domain.Entities;
 
 namespace SpotBoardingHouse.Infrastructure.Data.Seeders
 {

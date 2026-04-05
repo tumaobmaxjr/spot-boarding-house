@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using SpotBoardingHouse.Domain.Entity;
+using SpotBoardingHouse.Domain.Entities;
 using SpotBoardingHouse.Domain.Enums;
 using SpotBoardingHouse.Infrastructure.Data;
 using SpotBoardingHouse.Infrastructure.Repositories;
