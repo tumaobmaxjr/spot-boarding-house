@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SpotBoardingHouse.Application.Interfaces.Repositories;
-using SpotBoardingHouse.Domain.Entity;
+using SpotBoardingHouse.Domain.Entities;
 using SpotBoardingHouse.Infrastructure.Data;
 
 namespace SpotBoardingHouse.Infrastructure.Repositories

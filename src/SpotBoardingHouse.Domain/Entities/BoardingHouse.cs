@@ -1,6 +1,6 @@
 ﻿using SpotBoardingHouse.Domain.Enums;
 
-namespace SpotBoardingHouse.Domain.Entity
+namespace SpotBoardingHouse.Domain.Entities
 {
     public class BoardingHouse : BaseEntity
     {

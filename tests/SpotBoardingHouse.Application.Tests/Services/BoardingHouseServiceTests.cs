@@ -3,7 +3,7 @@ using Moq;
 using SpotBoardingHouse.Application.DTOs.BoardingHouses;
 using SpotBoardingHouse.Application.Interfaces.Repositories;
 using SpotBoardingHouse.Application.Services;
-using SpotBoardingHouse.Domain.Entity;
+using SpotBoardingHouse.Domain.Entities;
 using SpotBoardingHouse.Domain.Enums;
 
 namespace SpotBoardingHouse.Application.Tests.Services

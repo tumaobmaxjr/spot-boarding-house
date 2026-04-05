@@ -1,7 +1,7 @@
 ﻿using SpotBoardingHouse.Application.DTOs.RoomTypes;
 using SpotBoardingHouse.Application.Interfaces.Repositories;
 using SpotBoardingHouse.Application.Interfaces.Services;
-using SpotBoardingHouse.Domain.Entity;
+using SpotBoardingHouse.Domain.Entities;
 
 namespace SpotBoardingHouse.Application.Services
 {

@@ -1,7 +1,7 @@
 ﻿using SpotBoardingHouse.Application.DTOs.BoardingHouses;
 using SpotBoardingHouse.Application.Interfaces.Repositories;
 using SpotBoardingHouse.Application.Interfaces.Services;
-using SpotBoardingHouse.Domain.Entity;
+using SpotBoardingHouse.Domain.Entities;
 using SpotBoardingHouse.Domain.Enums;
 
 namespace SpotBoardingHouse.Application.Services

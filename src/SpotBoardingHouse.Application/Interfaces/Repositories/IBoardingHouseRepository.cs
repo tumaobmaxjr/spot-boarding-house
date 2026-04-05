@@ -1,4 +1,4 @@
-﻿using SpotBoardingHouse.Domain.Entity;
+﻿using SpotBoardingHouse.Domain.Entities;
 
 namespace SpotBoardingHouse.Application.Interfaces.Repositories
 {
