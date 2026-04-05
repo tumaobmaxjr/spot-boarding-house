@@ -14,6 +14,7 @@ namespace SpotBoardingHouse.Application
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IBoardingHouseService, BoardingHouseService>();
             services.AddScoped<IRoomTypeService, RoomTypeService>();
+            services.AddScoped<IRoomService, RoomService>();
             return services;
         }
     }
