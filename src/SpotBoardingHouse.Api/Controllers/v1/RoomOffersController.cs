@@ -3,6 +3,7 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SpotBoardingHouse.Application.DTOs.RoomOffers;
+using SpotBoardingHouse.Application.DTOs.Rooms;
 using SpotBoardingHouse.Application.Interfaces.Services;
 
 namespace SpotBoardingHouse.Api.Controllers.v1
@@ -27,36 +28,47 @@ namespace SpotBoardingHouse.Api.Controllers.v1
             _boardingHouseService = boardingHouseService;
         }
 
-        private Guid GetCurrentUserId()
+        private bool TryGetCurrentUserId(out Guid userId)
         {
+            userId = Guid.Empty;
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return Guid.Parse(userIdClaim!);
+            return Guid.TryParse(userIdClaim, out userId);
+        }
+
+        private async Task<(RoomDto? Room, bool Exists, bool Authorized)> TryAuthorizeByRoomIdAsync(Guid roomId)
+        {
+            var room = await _roomService.GetByIdAsync(roomId);
+            if (room == null)
+            {
+                return (null, false, false);
+            }
+
+            if (User.IsInRole("Admin"))
+            {
+                return (room, true, true);
+            }
+
+            if (!TryGetCurrentUserId(out var userId))
+            {
+                return (room, true, false);
+            }
+
+            var boardingHouse = await _boardingHouseService.GetByIdAsync(room.BoardingHouseId);
+            if (boardingHouse == null)
+            {
+                return (null, false, false); // treat missing parent as not found
+            }
+
+            return (room, true, boardingHouse.UserId == userId);
         }
 
         [HttpGet("room/{roomId:guid}")]
         public async Task<ActionResult<IEnumerable<RoomOfferDto>>> GetAll(Guid roomId)
         {
-            var room = await _roomService.GetByIdAsync(roomId);
-            if (room == null)
-            {
-                return NotFound();
-            }
+            var (_, exists, authorized) = await TryAuthorizeByRoomIdAsync(roomId);
 
-            if (!User.IsInRole("Admin"))
-            {
-                var userId = GetCurrentUserId();
-                var boardingHouse = await _boardingHouseService.GetByIdAsync(room.BoardingHouseId);
-
-                if (boardingHouse == null)
-                {
-                    return NotFound();
-                }
-
-                if (boardingHouse.UserId != userId)
-                {
-                    return Forbid();
-                }
-            }
+            if (!exists) return NotFound();
+            if (!authorized) return Forbid();
 
             var roomOffers = await _roomOfferService.GetAllByRoomIdAsync(roomId);
             return Ok(roomOffers);
@@ -71,27 +83,10 @@ namespace SpotBoardingHouse.Api.Controllers.v1
                 return NotFound();
             }
 
-            var room = await _roomService.GetByIdAsync(roomOffer.RoomId);
-            if (room == null)
-            {
-                return NotFound();
-            }
+            var (_, exists, authorized) = await TryAuthorizeByRoomIdAsync(roomOffer.RoomId);
 
-            if (!User.IsInRole("Admin"))
-            {
-                var userId = GetCurrentUserId();
-
-                var boardingHouse = await _boardingHouseService.GetByIdAsync(room.BoardingHouseId);
-                if (boardingHouse == null)
-                {
-                    return NotFound();
-                }
-
-                if (boardingHouse.UserId != userId)
-                {
-                    return Forbid();
-                }
-            }
+            if (!exists) return NotFound();
+            if (!authorized) return Forbid();
 
             return Ok(roomOffer);
         }
@@ -101,27 +96,10 @@ namespace SpotBoardingHouse.Api.Controllers.v1
         {
             try
             {
-                var room = await _roomService.GetByIdAsync(createRoomOfferDto.RoomId);
-                if (room == null)
-                {
-                    return NotFound();
-                }
+                var (_, exists, authorized) = await TryAuthorizeByRoomIdAsync(createRoomOfferDto.RoomId);
 
-                if (!User.IsInRole("Admin"))
-                {
-                    var userId = GetCurrentUserId();
-                    var boardingHouse = await _boardingHouseService.GetByIdAsync(room.BoardingHouseId);
-
-                    if (boardingHouse == null)
-                    {
-                        return NotFound();
-                    }
-
-                    if (boardingHouse.UserId != userId)
-                    {
-                        return Forbid();
-                    }
-                }
+                if (!exists) return NotFound();
+                if (!authorized) return Forbid();
 
                 var roomOffer = await _roomOfferService.CreateAsync(createRoomOfferDto);
                 return CreatedAtAction(nameof(GetById), new { id = roomOffer.Id }, roomOffer);
@@ -143,29 +121,10 @@ namespace SpotBoardingHouse.Api.Controllers.v1
                     return NotFound();
                 }
 
-                var room = await _roomService.GetByIdAsync(existing.RoomId);
-                if (room == null)
-                {
-                    return NotFound();
-                }
+                var (_, exists, authorized) = await TryAuthorizeByRoomIdAsync(existing.RoomId);
 
-                if (!User.IsInRole("Admin"))
-                {
-                    var userId = GetCurrentUserId();
-                    var boardingHouse = await _boardingHouseService.GetByIdAsync(room.BoardingHouseId);
-
-                    if (boardingHouse == null)
-                    {
-                        return NotFound();
-                    }
-
-                    if (boardingHouse.UserId != userId)
-                    {
-                        return Forbid();
-                    }
-                }
-
-
+                if (!exists) return NotFound();
+                if (!authorized) return Forbid();
 
                 var roomOffer = await _roomOfferService.UpdateAsync(id, existing.RoomId, updateRoomOfferDto);
                 return roomOffer == null ? NotFound() : Ok(roomOffer);
@@ -185,27 +144,10 @@ namespace SpotBoardingHouse.Api.Controllers.v1
                 return NotFound();
             }
 
-            var room = await _roomService.GetByIdAsync(existing.RoomId);
-            if (room == null)
-            {
-                return NotFound();
-            }
+            var (_, exists, authorized) = await TryAuthorizeByRoomIdAsync(existing.RoomId);
 
-            if (!User.IsInRole("Admin"))
-            {
-                var userId = GetCurrentUserId();
-                var boardingHouse = await _boardingHouseService.GetByIdAsync(room.BoardingHouseId);
-
-                if (boardingHouse == null)
-                {
-                    return NotFound();
-                }
-
-                if (boardingHouse.UserId != userId)
-                {
-                    return Forbid();
-                }
-            }
+            if (!exists) return NotFound();
+            if (!authorized) return Forbid();
 
             var deleted = await _roomOfferService.DeleteAsync(id, existing.RoomId);
             return deleted ? NoContent() : NotFound();

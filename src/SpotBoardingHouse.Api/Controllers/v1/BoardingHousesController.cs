@@ -24,54 +24,68 @@ namespace SpotBoardingHouse.Api.Controllers.v1
             _userService = userService;
         }
 
-        private Guid GetCurrentUserId()
+        private bool TryGetCurrentUserId(out Guid userId)
         {
+            userId = Guid.Empty;
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return Guid.Parse(userIdClaim!);
+            return Guid.TryParse(userIdClaim, out userId);
         }
 
-        private async Task<bool> IsOwnerAccountAsync(Guid userId)
+        private async Task<(BoardingHouseDto? BoardingHouse, bool Exists, bool Authorized)> TryGetAuthorizedBoardingHouseAsync(Guid boardingHouseId)
         {
-            var user = await _userService.GetByIdAsync(userId);
-            return user != null && string.Equals(user.RoleName, "Owner", StringComparison.OrdinalIgnoreCase);
+            var boardingHouse = await _boardingHouseService.GetByIdAsync(boardingHouseId);
+            if (boardingHouse == null)
+            {
+                return (null, false, false);
+            }
+
+            // Admin path: ensure target owner is an Owner account
+            if (User.IsInRole("Admin"))
+            {
+                var ownerUser = await _userService.GetByIdAsync(boardingHouse.UserId);
+                var isOwnerAccount = ownerUser != null &&
+                                     string.Equals(ownerUser.RoleName, "Owner", StringComparison.OrdinalIgnoreCase);
+                return (boardingHouse, true, isOwnerAccount);
+            }
+
+            // Owner path
+            if (!TryGetCurrentUserId(out var userId))
+            {
+                return (boardingHouse, true, false);
+            }
+
+            return (boardingHouse, true, boardingHouse.UserId == userId);
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BoardingHouseDto>>> GetAll()
         {
-            var userId = GetCurrentUserId();
             var isAdmin = User.IsInRole("Admin");
 
-            var boardingHouses = isAdmin
-                ? await _boardingHouseService.GetAllAsync()
-                : await _boardingHouseService.GetAllByUserIdAsync(userId);
+            if (isAdmin)
+            {
+                var allBoardingHouses = await _boardingHouseService.GetAllAsync();
+                return Ok(allBoardingHouses);
+            }
 
-            return Ok(boardingHouses);
+            if (!TryGetCurrentUserId(out Guid userId))
+            {
+                return Forbid();
+            }
+
+            var ownerBoardingHouses = await _boardingHouseService.GetAllByUserIdAsync(userId);
+
+            return Ok(ownerBoardingHouses);
         }
 
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<BoardingHouseDto>> GetById(Guid id)
         {
-            var userId = GetCurrentUserId();
-            var isAdmin = User.IsInRole("Admin");
+            var (boardingHouse, exists, authorized) = await TryGetAuthorizedBoardingHouseAsync(id);
 
-            var boardingHouse = await _boardingHouseService.GetByIdAsync(id);
-            if (boardingHouse == null)
-            {
-                return NotFound();
-            }
-
-            if (isAdmin)
-            {
-                if (!await IsOwnerAccountAsync(boardingHouse.UserId))
-                {
-                    return Forbid();
-                }
-            }
-            else if (boardingHouse.UserId != userId)
-            {
-                return Forbid();
-            }
+            if (!exists) return NotFound();
+            if (!authorized) return Forbid();
+            if (boardingHouse == null) return NotFound();
 
             return Ok(boardingHouse);
         }
@@ -81,8 +95,14 @@ namespace SpotBoardingHouse.Api.Controllers.v1
         {
             try
             {
-                var userId = GetCurrentUserId();
                 var isAdmin = User.IsInRole("Admin");
+
+                if (!TryGetCurrentUserId(out var userId))
+                {
+                    return Forbid();
+                }
+
+                Guid targetOwnerId;
 
                 if (isAdmin)
                 {
@@ -96,17 +116,23 @@ namespace SpotBoardingHouse.Api.Controllers.v1
                         return BadRequest(new { message = "Admin cannot create their own boarding house." });
                     }
 
-                    if (!await IsOwnerAccountAsync(ownerId.Value))
+                    var ownerUser = await _userService.GetByIdAsync(ownerId.Value);
+                    var isOwnerAccount = ownerUser != null &&
+                                         string.Equals(ownerUser.RoleName, "Owner", StringComparison.OrdinalIgnoreCase);
+
+                    if (!isOwnerAccount)
                     {
                         return BadRequest(new { message = "Admin can only create boarding house for Owner accounts." });
                     }
+
+                    targetOwnerId = ownerId.Value;
                 }
                 else
                 {
-                    ownerId = userId;
+                    targetOwnerId = userId;
                 }
 
-                var boardingHouse = await _boardingHouseService.CreateAsync(ownerId.Value, createBoardingHouseDto);
+                var boardingHouse = await _boardingHouseService.CreateAsync(targetOwnerId, createBoardingHouseDto);
 
                 return CreatedAtAction(nameof(GetById), new { id = boardingHouse.Id }, boardingHouse);
             }
@@ -121,42 +147,15 @@ namespace SpotBoardingHouse.Api.Controllers.v1
         {
             try
             {
-                var actorId = GetCurrentUserId();
-                var isAdmin = User.IsInRole("Admin");
+                var (existing, exists, authorized) = await TryGetAuthorizedBoardingHouseAsync(id);
 
-                var existing = await _boardingHouseService.GetByIdAsync(id);
-                if (existing == null)
-                {
-                    return NotFound();
-                }
+                if (!exists) return NotFound();
+                if (!authorized) return Forbid();
+                if (existing == null) return NotFound();
 
-                Guid effectiveOwnerId;
-                if (isAdmin)
-                {
-                    if (!await IsOwnerAccountAsync(existing.UserId))
-                    {
-                        return Forbid();
-                    }
+                var updated = await _boardingHouseService.UpdateAsync(id, existing.UserId, updateBoardingHouseDto);
 
-                    effectiveOwnerId = existing.UserId;
-                }
-                else
-                {
-                    if (existing.UserId != actorId)
-                    {
-                        return Forbid();
-                    }
-
-                    effectiveOwnerId = actorId;
-                }
-
-                var updated = await _boardingHouseService.UpdateAsync(id, effectiveOwnerId, updateBoardingHouseDto);
-                if (updated == null)
-                {
-                    return NotFound();
-                }
-
-                return Ok(updated);
+                return updated == null ? NotFound() : Ok(updated);
             }
             catch (InvalidOperationException ex)
             {
@@ -167,42 +166,15 @@ namespace SpotBoardingHouse.Api.Controllers.v1
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var actorId = GetCurrentUserId();
-            var isAdmin = User.IsInRole("Admin");
+            var (existing, exists, authorized) = await TryGetAuthorizedBoardingHouseAsync(id);
 
-            var existing = await _boardingHouseService.GetByIdAsync(id);
-            if (existing == null)
-            {
-                return NotFound();
-            }
+            if (!exists) return NotFound();
+            if (!authorized) return Forbid();
+            if (existing == null) return NotFound();
 
-            Guid effectiveOwnerId;
-            if (isAdmin)
-            {
-                if (!await IsOwnerAccountAsync(existing.UserId))
-                {
-                    return Forbid();
-                }
+            var deleted = await _boardingHouseService.DeleteAsync(id, existing.UserId);
 
-                effectiveOwnerId = existing.UserId;
-            }
-            else
-            {
-                if (existing.UserId != actorId)
-                {
-                    return Forbid();
-                }
-
-                effectiveOwnerId = actorId;
-            }
-
-            var deleted = await _boardingHouseService.DeleteAsync(id, effectiveOwnerId);
-            if (!deleted)
-            {
-                return NotFound();
-            }
-
-            return NoContent();
+            return deleted ? NoContent() : NotFound();
         }
     }
 }
