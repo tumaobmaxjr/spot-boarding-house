@@ -169,6 +169,60 @@ namespace SpotBoardingHouse.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("SpotBoardingHouse.Domain.Entities.RoomOffer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("MaxPrice")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<decimal>("MinPrice")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<Guid>("RoomId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("RoomTypeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoomTypeId");
+
+                    b.HasIndex("RoomId", "RoomTypeId")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.ToTable("RoomOffers", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_RoomOffer_Capacity", "Capacity > 0");
+
+                            t.HasCheckConstraint("CK_RoomOffer_MaxPrice", "MaxPrice >= MinPrice");
+
+                            t.HasCheckConstraint("CK_RoomOffer_MinPrice", "MinPrice >= 0");
+                        });
+                });
+
             modelBuilder.Entity("SpotBoardingHouse.Domain.Entities.RoomType", b =>
                 {
                     b.Property<Guid>("Id")
@@ -188,6 +242,16 @@ namespace SpotBoardingHouse.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<int>("MaxOccupants")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
+                    b.Property<int>("MinOccupants")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -202,7 +266,12 @@ namespace SpotBoardingHouse.Infrastructure.Migrations
                         .IsUnique()
                         .HasFilter("[IsDeleted] = 0");
 
-                    b.ToTable("RoomTypes", (string)null);
+                    b.ToTable("RoomTypes", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_RoomType_MaxOccupants", "MaxOccupants >= MinOccupants");
+
+                            t.HasCheckConstraint("CK_RoomType_MinOccupants", "MinOccupants > 0");
+                        });
                 });
 
             modelBuilder.Entity("SpotBoardingHouse.Domain.Entities.User", b =>
@@ -277,6 +346,25 @@ namespace SpotBoardingHouse.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("BoardingHouse");
+                });
+
+            modelBuilder.Entity("SpotBoardingHouse.Domain.Entities.RoomOffer", b =>
+                {
+                    b.HasOne("SpotBoardingHouse.Domain.Entities.Room", "Room")
+                        .WithMany()
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SpotBoardingHouse.Domain.Entities.RoomType", "RoomType")
+                        .WithMany()
+                        .HasForeignKey("RoomTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Room");
+
+                    b.Navigation("RoomType");
                 });
 
             modelBuilder.Entity("SpotBoardingHouse.Domain.Entities.User", b =>

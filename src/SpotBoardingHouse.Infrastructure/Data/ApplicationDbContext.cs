@@ -15,6 +15,7 @@ namespace SpotBoardingHouse.Infrastructure.Data
         public DbSet<BoardingHouse> BoardingHouses => Set<BoardingHouse>();
         public DbSet<RoomType> RoomTypes => Set<RoomType>();
         public DbSet<Room> Rooms => Set<Room>();
+        public DbSet<RoomOffer> RoomOffers => Set<RoomOffer>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -116,15 +116,7 @@ namespace SpotBoardingHouse.Application.Services
 
         public async Task<bool> DeleteAsync(Guid id, Guid userId)
         {
-            var boardingHouse = await _boardingHouseRepository.GetByIdAsync(id);
-            if (boardingHouse == null || boardingHouse.UserId != userId)
-            {
-                return false;
-            }
-
-            await _boardingHouseRepository.DeleteAsync(id);
-
-            return true;
+            return await _boardingHouseRepository.SoftDeleteCascadeAsync(id, userId);
         }
 
         private static BoardingHouseDto MapToDto(BoardingHouse boardingHouse)

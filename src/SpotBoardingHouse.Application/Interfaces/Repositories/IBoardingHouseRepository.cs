@@ -9,6 +9,7 @@ namespace SpotBoardingHouse.Application.Interfaces.Repositories
         Task<BoardingHouse?> GetByIdAsync(Guid id);
         Task<BoardingHouse> AddAsync(BoardingHouse boardingHouse);
         Task UpdateAsync(BoardingHouse boardingHouse);
+        Task<bool> SoftDeleteCascadeAsync(Guid id, Guid userId);
         Task DeleteAsync(Guid id);
         Task<bool> ExistsAsync(Guid id);
         Task<bool> NameExistsForUserAsync(string name, Guid userId, Guid? excludedId = null);

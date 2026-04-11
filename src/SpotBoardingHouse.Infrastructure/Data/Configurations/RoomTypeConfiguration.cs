@@ -8,7 +8,11 @@ namespace SpotBoardingHouse.Infrastructure.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<RoomType> builder)
         {
-            builder.ToTable("RoomTypes");
+            builder.ToTable("RoomTypes", tableBuilder =>
+            {
+                tableBuilder.HasCheckConstraint("CK_RoomType_MinOccupants", "MinOccupants > 0");
+                tableBuilder.HasCheckConstraint("CK_RoomType_MaxOccupants", "MaxOccupants >= MinOccupants");
+            });
 
             builder.HasKey(rt => rt.Id);
 
@@ -18,6 +22,14 @@ namespace SpotBoardingHouse.Infrastructure.Data.Configurations
 
             builder.Property(rt => rt.Description)
                 .HasMaxLength(255);
+
+            builder.Property(rt => rt.MinOccupants)
+                .IsRequired()
+                .HasDefaultValue(1);
+
+            builder.Property(rt => rt.MaxOccupants)
+                .IsRequired()
+                .HasDefaultValue(1);
 
             builder.HasIndex(rt => rt.Name)
                 .IsUnique()

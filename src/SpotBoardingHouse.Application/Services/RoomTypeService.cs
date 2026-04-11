@@ -33,11 +33,23 @@ namespace SpotBoardingHouse.Application.Services
                 throw new InvalidOperationException($"Room type '{createRoomType.Name}' already exists.");
             }
 
+            if (createRoomType.MinOccupants <= 0)
+            {
+                throw new InvalidOperationException($"Min occupants must be greater than 0.");
+            }
+
+            if (createRoomType.MaxOccupants < createRoomType.MinOccupants)
+            {
+                throw new InvalidOperationException($"Max occupants must be greater than or equal to min occupants.");
+            }
+
             var roomType = new RoomType
             {
                 Id = Guid.NewGuid(),
                 Name = createRoomType.Name.Trim(),
                 Description = createRoomType.Description?.Trim(),
+                MinOccupants = createRoomType.MinOccupants,
+                MaxOccupants = createRoomType.MaxOccupants,
                 CreatedAt = DateTime.UtcNow,
                 IsDeleted = false
             };
@@ -59,7 +71,7 @@ namespace SpotBoardingHouse.Application.Services
             {
                 if (await _roomTypeRepository.NameExistsAsync(updateRoomTypeDto.Name, id))
                 {
-                    throw new InvalidOperationException($"Room type '{updateRoomTypeDto.Name}' already exists.'");
+                    throw new InvalidOperationException($"Room type '{updateRoomTypeDto.Name}' already exists.");
                 }
                 existing.Name = updateRoomTypeDto.Name.Trim();
             }
@@ -68,6 +80,22 @@ namespace SpotBoardingHouse.Application.Services
             {
                 existing.Description = updateRoomTypeDto.Description.Trim();
             }
+
+            var newMin = updateRoomTypeDto.MinOccupants ?? existing.MinOccupants;
+            var newMax = updateRoomTypeDto.MaxOccupants ?? existing.MaxOccupants;
+
+            if (newMin <= 0)
+            {
+                throw new InvalidOperationException($"Min occupants must greater than 0.");
+            }
+
+            if (newMax < newMin)
+            {
+                throw new InvalidOperationException($"Max occupants must be greater than or equal to min occupants.");
+            }
+
+            existing.MinOccupants = newMin;
+            existing.MaxOccupants = newMax;
 
             existing.UpdatedAt = DateTime.UtcNow;
 
@@ -96,6 +124,8 @@ namespace SpotBoardingHouse.Application.Services
                 Id = roomType.Id,
                 Name = roomType.Name,
                 Description = roomType.Description,
+                MinOccupants = roomType.MinOccupants,
+                MaxOccupants = roomType.MaxOccupants,
                 CreatedAt = roomType.CreatedAt,
                 UpdatedAt = roomType.UpdatedAt
             };

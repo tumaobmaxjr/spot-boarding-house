@@ -6,13 +6,13 @@ namespace SpotBoardingHouse.Infrastructure.Data.Seeders
 {
     public class RoomTypeSeeder : ISeeder
     {
-        private static readonly (string Name, string? Description)[] Defaults =
+        private static readonly (string Name, string? Description, int Min, int Max)[] Defaults =
         [
-            ("BedSpace", "Shared dormitory bed, per-person pricing"),
-            ("Solo", "Private room for single occupant"),
-            ("Double", "Private room with one large bed for two occupants"),
-            ("Twin", "Private room with two separate beds"),
-            ("Family", "Larger room suitable for families"),
+            ("BedSpace", "Shared dormitory bed, per-person pricing", 1, 8),
+            ("Solo", "Private room for single occupant", 1, 1),
+            ("Double", "Private room with one large bed for two occupants", 2, 2),
+            ("Twin", "Private room with two separate beds", 2, 2),
+            ("Family", "Larger room suitable for families", 3, 6),
         ];
 
         public async Task SeedAsync(
@@ -20,14 +20,16 @@ namespace SpotBoardingHouse.Infrastructure.Data.Seeders
             IConfiguration configuration,
             CancellationToken cancellationToken = default)
         {
-            foreach (var (name, desc) in Defaults)
+            foreach (var (name, desc, min, max) in Defaults)
             {
                 if (!await context.RoomTypes.AnyAsync(rt => rt.Name == name && !rt.IsDeleted, cancellationToken))
                 {
                     context.RoomTypes.Add(new RoomType
                     {
                         Name = name,
-                        Description = desc
+                        Description = desc,
+                        MinOccupants = min,
+                        MaxOccupants = max
                     });
                 }
             }

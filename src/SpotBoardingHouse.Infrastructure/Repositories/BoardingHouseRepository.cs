@@ -51,6 +51,45 @@ namespace SpotBoardingHouse.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async Task<bool> SoftDeleteCascadeAsync(Guid id, Guid userId)
+        {
+            var boardingHouse = await _context.BoardingHouses
+                .FirstOrDefaultAsync(bh => bh.Id == id && bh.UserId == userId && !bh.IsDeleted);
+
+            if (boardingHouse == null)
+            {
+                return false;
+            }
+
+            var rooms = await _context.Rooms
+                .Where(r => r.BoardingHouseId == id && !r.IsDeleted)
+                .ToListAsync();
+
+            var roomIds = rooms.Select(r => r.Id).ToList();
+
+            var roomOffers = await _context.RoomOffers
+                .Where(ro => roomIds.Contains(ro.Id) && !ro.IsDeleted)
+                .ToListAsync();
+
+            foreach (var offer in roomOffers)
+            {
+                offer.IsDeleted = true;
+                offer.DeletedAt = DateTime.UtcNow;
+            }
+
+            foreach (var room in rooms)
+            {
+                room.IsDeleted = true;
+                room.DeletedAt = DateTime.UtcNow;
+            }
+
+            boardingHouse.IsDeleted = true;
+            boardingHouse.DeletedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
         public async Task DeleteAsync(Guid id)
         {
             var boardingHouse = await _context.BoardingHouses.FindAsync(id);

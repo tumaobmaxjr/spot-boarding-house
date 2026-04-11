@@ -10,5 +10,11 @@ namespace SpotBoardingHouse.Application.DTOs.RoomTypes
 
         [MaxLength(255)]
         public string? Description { get; set; }
+
+        [Required]
+        public int MinOccupants { get; set; }
+
+        [Required]
+        public int MaxOccupants { get; set; }
     }
 }
