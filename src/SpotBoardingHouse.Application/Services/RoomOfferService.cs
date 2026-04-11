@@ -2,6 +2,7 @@
 using SpotBoardingHouse.Application.Interfaces.Repositories;
 using SpotBoardingHouse.Application.Interfaces.Services;
 using SpotBoardingHouse.Domain.Entities;
+using SpotBoardingHouse.Domain.Enums;
 
 namespace SpotBoardingHouse.Application.Services
 {
@@ -171,8 +172,15 @@ namespace SpotBoardingHouse.Application.Services
             return true;
         }
 
+        private static RoomOfferStatus GetOfferStatus(bool isAvailable)
+        {
+            return isAvailable ? RoomOfferStatus.Available : RoomOfferStatus.Unavailable;
+        }
+
         private static RoomOfferDto MapToDto(RoomOffer roomOffer)
         {
+            var offerStatus = GetOfferStatus(roomOffer.IsAvailable);
+
             return new RoomOfferDto
             {
                 Id = roomOffer.Id,
@@ -183,6 +191,7 @@ namespace SpotBoardingHouse.Application.Services
                 MinPrice = roomOffer.MinPrice,
                 MaxPrice = roomOffer.MaxPrice,
                 IsAvailable = roomOffer.IsAvailable,
+                OfferStatus = offerStatus.ToString(),
                 CreatedAt = roomOffer.CreatedAt,
                 UpdatedAt = roomOffer.UpdatedAt
             };

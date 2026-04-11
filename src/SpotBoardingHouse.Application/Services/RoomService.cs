@@ -2,6 +2,7 @@
 using SpotBoardingHouse.Application.Interfaces.Repositories;
 using SpotBoardingHouse.Application.Interfaces.Services;
 using SpotBoardingHouse.Domain.Entities;
+using SpotBoardingHouse.Domain.Enums;
 
 namespace SpotBoardingHouse.Application.Services
 {
@@ -122,8 +123,20 @@ namespace SpotBoardingHouse.Application.Services
             return true;
         }
 
+        private static RoomOccupancyStatus GetOccupancyStatus(int occupiedSlots, int baseCapacity)
+        {
+            if (occupiedSlots <= 0) return RoomOccupancyStatus.Available;
+            if (occupiedSlots >= baseCapacity) return RoomOccupancyStatus.Full;
+            return RoomOccupancyStatus.PartiallyOccupied;
+        }
+
         private static RoomDto MapToDto(Room room)
         {
+            var remainingSlots = room.BaseCapacity - room.OccupiedSlots;
+            if (remainingSlots < 0) remainingSlots = 0;
+
+            var occupancyStatus = GetOccupancyStatus(room.OccupiedSlots, room.BaseCapacity);
+
             return new RoomDto
             {
                 Id = room.Id,
@@ -132,9 +145,11 @@ namespace SpotBoardingHouse.Application.Services
                 RoomNumber = room.RoomNumber,
                 BaseCapacity = room.BaseCapacity,
                 OccupiedSlots = room.OccupiedSlots,
+                RemainingSlots = remainingSlots,
+                OccupancyStatus = occupancyStatus.ToString(),
                 AdditionalDescription = room.AdditionalDescription,
                 CreatedAt = room.CreatedAt,
-                UpdatedAt = room.UpdatedAt,
+                UpdatedAt = room.UpdatedAt
             };
         }
     }

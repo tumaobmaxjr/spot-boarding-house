@@ -10,6 +10,7 @@
         public decimal MinPrice { get; set; }
         public decimal MaxPrice { get; set; }
         public bool IsAvailable { get; set; }
+        public string OfferStatus { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }

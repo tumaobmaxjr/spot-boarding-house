@@ -73,6 +73,7 @@ namespace SpotBoardingHouse.Application.Services
                 {
                     throw new InvalidOperationException($"Room type '{updateRoomTypeDto.Name}' already exists.");
                 }
+
                 existing.Name = updateRoomTypeDto.Name.Trim();
             }
 
@@ -86,7 +87,7 @@ namespace SpotBoardingHouse.Application.Services
 
             if (newMin <= 0)
             {
-                throw new InvalidOperationException($"Min occupants must greater than 0.");
+                throw new InvalidOperationException("Min occupants must be greater than 0.");
             }
 
             if (newMax < newMin)

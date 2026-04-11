@@ -16,22 +16,35 @@ namespace SpotBoardingHouse.Infrastructure.Data.Seeders
         ];
 
         public async Task SeedAsync(
-            ApplicationDbContext context,
-            IConfiguration configuration,
-            CancellationToken cancellationToken = default)
+                   ApplicationDbContext context,
+                   IConfiguration configuration,
+                   CancellationToken cancellationToken = default)
         {
-            foreach (var (name, desc, min, max) in Defaults)
+            foreach (var (name, description, min, max) in Defaults)
             {
-                if (!await context.RoomTypes.AnyAsync(rt => rt.Name == name && !rt.IsDeleted, cancellationToken))
+                var existing = await context.RoomTypes
+                    .FirstOrDefaultAsync(rt => rt.Name == name, cancellationToken);
+                if (existing == null)
                 {
                     context.RoomTypes.Add(new RoomType
                     {
                         Name = name,
-                        Description = desc,
+                        Description = description,
                         MinOccupants = min,
-                        MaxOccupants = max
+                        MaxOccupants = max,
+                        CreatedAt = DateTime.UtcNow,
+                        IsDeleted = false
                     });
+
+                    continue;
                 }
+
+                // Strict mode: only normalize occupancy bounds
+                existing.MinOccupants = min;
+                existing.MaxOccupants = max;
+                existing.UpdatedAt = DateTime.UtcNow;
+
+                // Keep existing.Description unchanged
             }
 
             await context.SaveChangesAsync(cancellationToken);
