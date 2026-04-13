@@ -22,6 +22,42 @@ namespace SpotBoardingHouse.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("SpotBoardingHouse.Domain.Entities.Amenity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Icon")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.ToTable("Amenities", (string)null);
+                });
+
             modelBuilder.Entity("SpotBoardingHouse.Domain.Entities.BoardingHouse", b =>
                 {
                     b.Property<Guid>("Id")
@@ -79,6 +115,36 @@ namespace SpotBoardingHouse.Infrastructure.Migrations
                         .HasFilter("[IsDeleted] = 0");
 
                     b.ToTable("BoardingHouses", (string)null);
+                });
+
+            modelBuilder.Entity("SpotBoardingHouse.Domain.Entities.BoardingHouseAmenity", b =>
+                {
+                    b.Property<Guid>("BoardingHouseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AmenityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("BoardingHouseId", "AmenityId");
+
+                    b.HasIndex("AmenityId");
+
+                    b.ToTable("BoardingHouseAmenities", (string)null);
                 });
 
             modelBuilder.Entity("SpotBoardingHouse.Domain.Entities.Role", b =>
@@ -167,6 +233,36 @@ namespace SpotBoardingHouse.Infrastructure.Migrations
 
                             t.HasCheckConstraint("CK_Room_OccupiedSlots", "OccupiedSlots <= BaseCapacity");
                         });
+                });
+
+            modelBuilder.Entity("SpotBoardingHouse.Domain.Entities.RoomAmenity", b =>
+                {
+                    b.Property<Guid>("RoomId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AmenityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("RoomId", "AmenityId");
+
+                    b.HasIndex("AmenityId");
+
+                    b.ToTable("RoomAmenities", (string)null);
                 });
 
             modelBuilder.Entity("SpotBoardingHouse.Domain.Entities.RoomOffer", b =>
@@ -337,6 +433,25 @@ namespace SpotBoardingHouse.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SpotBoardingHouse.Domain.Entities.BoardingHouseAmenity", b =>
+                {
+                    b.HasOne("SpotBoardingHouse.Domain.Entities.Amenity", "Amenity")
+                        .WithMany("BoardingHouseAmenities")
+                        .HasForeignKey("AmenityId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SpotBoardingHouse.Domain.Entities.BoardingHouse", "BoardingHouse")
+                        .WithMany()
+                        .HasForeignKey("BoardingHouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Amenity");
+
+                    b.Navigation("BoardingHouse");
+                });
+
             modelBuilder.Entity("SpotBoardingHouse.Domain.Entities.Room", b =>
                 {
                     b.HasOne("SpotBoardingHouse.Domain.Entities.BoardingHouse", "BoardingHouse")
@@ -346,6 +461,25 @@ namespace SpotBoardingHouse.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("BoardingHouse");
+                });
+
+            modelBuilder.Entity("SpotBoardingHouse.Domain.Entities.RoomAmenity", b =>
+                {
+                    b.HasOne("SpotBoardingHouse.Domain.Entities.Amenity", "Amenity")
+                        .WithMany("RoomAmenities")
+                        .HasForeignKey("AmenityId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SpotBoardingHouse.Domain.Entities.Room", "Room")
+                        .WithMany()
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Amenity");
+
+                    b.Navigation("Room");
                 });
 
             modelBuilder.Entity("SpotBoardingHouse.Domain.Entities.RoomOffer", b =>
@@ -376,6 +510,13 @@ namespace SpotBoardingHouse.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("SpotBoardingHouse.Domain.Entities.Amenity", b =>
+                {
+                    b.Navigation("BoardingHouseAmenities");
+
+                    b.Navigation("RoomAmenities");
                 });
 #pragma warning restore 612, 618
         }

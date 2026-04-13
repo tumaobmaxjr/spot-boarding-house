@@ -17,8 +17,4 @@
     <ProjectReference Include="..\SpotBoardingHouse.Domain\SpotBoardingHouse.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="DTOs\Amenity\" />
-  </ItemGroup>
-
 </Project>
