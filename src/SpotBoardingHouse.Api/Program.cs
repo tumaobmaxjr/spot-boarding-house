@@ -1,4 +1,6 @@
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -25,7 +27,14 @@ namespace SpotBoardingHouse.Api
             builder.Services.AddApplicationServices();
             builder.Services.AddInfrastructureServices();
 
-            builder.Services.AddControllers();
+            builder.Services
+                .AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(
+                        JsonNamingPolicy.CamelCase));
+                });
+
             builder.Services.AddEndpointsApiExplorer();
 
             builder.Services.AddOpenApi(options =>
