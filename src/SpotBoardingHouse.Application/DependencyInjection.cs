@@ -20,6 +20,8 @@ namespace SpotBoardingHouse.Application
             services.AddScoped<IAmenityService, AmenityService>();
             services.AddScoped<IBoardingHouseAmenityService, BoardingHouseAmenityService>();
             services.AddScoped<IRoomAmenityService, RoomAmenityService>();
+
+            services.AddScoped<IContactService, ContactService>();
             return services;
         }
     }

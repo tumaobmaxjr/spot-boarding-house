@@ -18,6 +18,8 @@ namespace SpotBoardingHouse.Infrastructure
             services.AddScoped<IAmenityRepository, AmenityRepository>();
             services.AddScoped<IBoardingHouseAmenityRepository, BoardingHouseAmenityRepository>();
             services.AddScoped<IRoomAmenityRepository, RoomAmenityRepository>();
+
+            services.AddScoped<IContactRepository, ContactRepository>();
             return services;
         }
     }

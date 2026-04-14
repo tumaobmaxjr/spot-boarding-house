@@ -147,6 +147,49 @@ namespace SpotBoardingHouse.Infrastructure.Migrations
                     b.ToTable("BoardingHouseAmenities", (string)null);
                 });
 
+            modelBuilder.Entity("SpotBoardingHouse.Domain.Entities.Contact", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BoardingHouseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Network")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BoardingHouseId")
+                        .IsUnique()
+                        .HasFilter("[IsPrimary] = 1 AND [IsDeleted] = 0");
+
+                    b.ToTable("Contacts", (string)null);
+                });
+
             modelBuilder.Entity("SpotBoardingHouse.Domain.Entities.Role", b =>
                 {
                     b.Property<Guid>("Id")
@@ -448,6 +491,17 @@ namespace SpotBoardingHouse.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Amenity");
+
+                    b.Navigation("BoardingHouse");
+                });
+
+            modelBuilder.Entity("SpotBoardingHouse.Domain.Entities.Contact", b =>
+                {
+                    b.HasOne("SpotBoardingHouse.Domain.Entities.BoardingHouse", "BoardingHouse")
+                        .WithMany()
+                        .HasForeignKey("BoardingHouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("BoardingHouse");
                 });
