@@ -190,6 +190,57 @@ namespace SpotBoardingHouse.Infrastructure.Migrations
                     b.ToTable("Contacts", (string)null);
                 });
 
+            modelBuilder.Entity("SpotBoardingHouse.Domain.Entities.Media", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("BoardingHouseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid?>("RoomId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BoardingHouseId")
+                        .IsUnique()
+                        .HasFilter("[BoardingHouseId] IS NOT NULL AND [IsPrimary] = 1 AND [IsDeleted] = 0");
+
+                    b.HasIndex("RoomId")
+                        .IsUnique()
+                        .HasFilter("[RoomId] IS NOT NULL AND [IsPrimary] = 1 AND [IsDeleted] = 0");
+
+                    b.ToTable("Media", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Media_TargetXor", "(([BoardingHouseId] IS NOT NULL AND [RoomId] IS NULL) OR ([BoardingHouseId] IS NULL AND [RoomId] IS NOT NULL))");
+                        });
+                });
+
             modelBuilder.Entity("SpotBoardingHouse.Domain.Entities.Role", b =>
                 {
                     b.Property<Guid>("Id")
@@ -504,6 +555,23 @@ namespace SpotBoardingHouse.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("BoardingHouse");
+                });
+
+            modelBuilder.Entity("SpotBoardingHouse.Domain.Entities.Media", b =>
+                {
+                    b.HasOne("SpotBoardingHouse.Domain.Entities.BoardingHouse", "BoardingHouse")
+                        .WithMany()
+                        .HasForeignKey("BoardingHouseId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SpotBoardingHouse.Domain.Entities.Room", "Room")
+                        .WithMany()
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("BoardingHouse");
+
+                    b.Navigation("Room");
                 });
 
             modelBuilder.Entity("SpotBoardingHouse.Domain.Entities.Room", b =>

@@ -20,6 +20,7 @@ namespace SpotBoardingHouse.Infrastructure.Data
         public DbSet<BoardingHouseAmenity> BoardingHouseAmenities => Set<BoardingHouseAmenity>();
         public DbSet<RoomAmenity> RoomAmenities => Set<RoomAmenity>();
         public DbSet<Contact> Contacts => Set<Contact>();
+        public DbSet<Media> Media => Set<Media>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
