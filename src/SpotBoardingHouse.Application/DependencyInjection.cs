@@ -22,6 +22,7 @@ namespace SpotBoardingHouse.Application
             services.AddScoped<IRoomAmenityService, RoomAmenityService>();
 
             services.AddScoped<IContactService, ContactService>();
+            services.AddScoped<IMediaService, MediaService>();
             return services;
         }
     }

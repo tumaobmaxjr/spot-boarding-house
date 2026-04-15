@@ -20,6 +20,7 @@ namespace SpotBoardingHouse.Infrastructure
             services.AddScoped<IRoomAmenityRepository, RoomAmenityRepository>();
 
             services.AddScoped<IContactRepository, ContactRepository>();
+            services.AddScoped<IMediaRepository, MediaRepository>();
             return services;
         }
     }
