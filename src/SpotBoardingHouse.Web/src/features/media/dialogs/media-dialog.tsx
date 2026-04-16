@@ -17,7 +17,8 @@ interface MediaDialogProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (payload: CreateMediaPayload | UpdateMediaPayload) => void;
-  boardingHouseId: string;
+  boardingHouseId?: string;
+  roomId?: string;
   initialData?: {
     url: string;
     isPrimary: boolean;
@@ -31,6 +32,7 @@ export function MediaDialog({
   onClose,
   onSubmit,
   boardingHouseId,
+  roomId,
   initialData,
   isLoading,
 }: MediaDialogProps) {
@@ -64,6 +66,7 @@ export function MediaDialog({
 
     onSubmit({
       boardingHouseId,
+      roomId,
       url: url.trim(),
       isPrimary,
       displayOrder,

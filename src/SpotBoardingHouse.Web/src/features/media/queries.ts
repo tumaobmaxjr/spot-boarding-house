@@ -15,6 +15,17 @@ export function useMediaByBoardingHouseQuery(boardingHouseId?: string) {
   });
 }
 
+export function useMediaByRoomQuery(roomId?: string) {
+  return useQuery({
+    queryKey: ["media", "room", roomId],
+    enabled: !!roomId,
+    queryFn: async () => {
+      const { data } = await api.get<MediaDto[]>(`api/v1/media/room/${roomId}`);
+      return data;
+    },
+  });
+}
+
 export function useMediaByIdQuery(id?: string) {
   return useQuery({
     queryKey: ["media", "detail", id],
@@ -38,6 +49,12 @@ export function useCreateMedia() {
       if (created.boardingHouseId) {
         queryClient.invalidateQueries({
           queryKey: ["media", "boarding-house", created.boardingHouseId],
+        });
+      }
+
+      if (created.roomId) {
+        queryClient.invalidateQueries({
+          queryKey: ["media", "room", created.roomId],
         });
       }
 
@@ -69,6 +86,12 @@ export function useUpdateMedia() {
         });
       }
 
+      if (updated.roomId) {
+        queryClient.invalidateQueries({
+          queryKey: ["media", "room", updated.roomId],
+        });
+      }
+
       queryClient.invalidateQueries({
         queryKey: ["media", "detail", updated.id],
       });
@@ -83,17 +106,25 @@ export function useDeleteMedia() {
     mutationFn: async ({
       id,
       boardingHouseId,
+      roomId,
     }: {
       id: string;
       boardingHouseId?: string;
+      roomId?: string;
     }) => {
       await api.delete(`api/v1/media/${id}`);
-      return { id, boardingHouseId };
+      return { id, boardingHouseId, roomId };
     },
-    onSuccess: ({ id, boardingHouseId }) => {
+    onSuccess: ({ id, boardingHouseId, roomId }) => {
       if (boardingHouseId) {
         queryClient.invalidateQueries({
           queryKey: ["media", "boarding-house", boardingHouseId],
+        });
+      }
+
+      if (roomId) {
+        queryClient.invalidateQueries({
+          queryKey: ["media", "room", roomId],
         });
       }
 

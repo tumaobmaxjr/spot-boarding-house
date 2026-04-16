@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Delete, Edit } from "@mui/icons-material";
 import {
   Alert,
   Box,
   Button,
   Chip,
+  Collapse,
   CircularProgress,
   IconButton,
   Paper,
+  Stack,
   Snackbar,
   Table,
   TableBody,
@@ -16,6 +18,8 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import type { AxiosError } from "axios";
 import { formatDateTime } from "../../../lib/format-date";
 import { useBoardingHousesQuery } from "../../boardinghouses/queries";
@@ -27,6 +31,7 @@ import {
 } from "../queries";
 import { RoomDialog } from "../dialogs/room-dialog";
 import type { CreateRoomPayload, RoomDto, UpdateRoomPayload } from "../types";
+import { RoomMediaSection } from "../../media/components/room-media-section";
 
 export function RoomsPage() {
   const { data, isLoading, isError, error } = useRoomsQuery();
@@ -38,6 +43,7 @@ export function RoomsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogKey, setDialogKey] = useState(0);
   const [editingRoom, setEditingRoom] = useState<RoomDto | null>(null);
+  const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -115,6 +121,13 @@ export function RoomsPage() {
     }
   };
 
+  const toggleExpanded = (id: string) => {
+    setExpandedRows((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
   return (
     <Paper sx={{ p: 2 }}>
       <Box
@@ -134,6 +147,7 @@ export function RoomsPage() {
       <Table size="small">
         <TableHead>
           <TableRow>
+            <TableCell width={56} />
             <TableCell>Boarding House</TableCell>
             <TableCell>Room #</TableCell>
             <TableCell>Capacity</TableCell>
@@ -148,40 +162,62 @@ export function RoomsPage() {
         </TableHead>
         <TableBody>
           {(data ?? []).map((room) => (
-            <TableRow key={room.id}>
-              <TableCell>{room.boardingHouseName}</TableCell>
-              <TableCell>{room.roomNumber}</TableCell>
-              <TableCell>{room.baseCapacity}</TableCell>
-              <TableCell>{room.occupiedSlots}</TableCell>
-              <TableCell>{room.remainingSlots}</TableCell>
-              <TableCell>
-                <Chip
-                  size="small"
-                  color={room.occupancyStatus === "Full" ? "warning" : "success"}
-                  label={room.occupancyStatus}
-                />
-              </TableCell>
-              <TableCell>{room.additionalDescription || "-"}</TableCell>
-              <TableCell>{formatDateTime(room.createdAt)}</TableCell>
-              <TableCell>{formatDateTime(room.updatedAt)}</TableCell>
-              <TableCell align="right">
-                <IconButton size="small" onClick={() => handleEdit(room)}>
-                  <Edit fontSize="small" />
-                </IconButton>
-                <IconButton
-                  size="small"
-                  color="error"
-                  onClick={() => handleDelete(room.id)}
-                  disabled={deleteRoom.isPending}
-                >
-                  <Delete fontSize="small" />
-                </IconButton>
-              </TableCell>
-            </TableRow>
+            <Fragment key={room.id}>
+              <TableRow>
+                <TableCell>
+                  <IconButton size="small" onClick={() => toggleExpanded(room.id)}>
+                    {expandedRows[room.id] ? (
+                      <KeyboardArrowUpIcon fontSize="small" />
+                    ) : (
+                      <KeyboardArrowDownIcon fontSize="small" />
+                    )}
+                  </IconButton>
+                </TableCell>
+                <TableCell>{room.boardingHouseName}</TableCell>
+                <TableCell>{room.roomNumber}</TableCell>
+                <TableCell>{room.baseCapacity}</TableCell>
+                <TableCell>{room.occupiedSlots}</TableCell>
+                <TableCell>{room.remainingSlots}</TableCell>
+                <TableCell>
+                  <Chip
+                    size="small"
+                    color={room.occupancyStatus === "Full" ? "warning" : "success"}
+                    label={room.occupancyStatus}
+                  />
+                </TableCell>
+                <TableCell>{room.additionalDescription || "-"}</TableCell>
+                <TableCell>{formatDateTime(room.createdAt)}</TableCell>
+                <TableCell>{formatDateTime(room.updatedAt)}</TableCell>
+                <TableCell align="right">
+                  <IconButton size="small" onClick={() => handleEdit(room)}>
+                    <Edit fontSize="small" />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    color="error"
+                    onClick={() => handleDelete(room.id)}
+                    disabled={deleteRoom.isPending}
+                  >
+                    <Delete fontSize="small" />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell colSpan={11} sx={{ py: 0, borderBottom: 0 }}>
+                  <Collapse in={!!expandedRows[room.id]} timeout="auto" unmountOnExit>
+                    <Box sx={{ p: 2 }}>
+                      <Stack spacing={2}>
+                        <RoomMediaSection roomId={room.id} />
+                      </Stack>
+                    </Box>
+                  </Collapse>
+                </TableCell>
+              </TableRow>
+            </Fragment>
           ))}
           {(data ?? []).length === 0 && (
             <TableRow>
-              <TableCell colSpan={10}>No rooms yet.</TableCell>
+              <TableCell colSpan={11}>No rooms yet.</TableCell>
             </TableRow>
           )}
         </TableBody>

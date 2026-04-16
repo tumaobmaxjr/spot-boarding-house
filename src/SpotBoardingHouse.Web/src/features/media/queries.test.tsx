@@ -5,6 +5,7 @@ import {
   useCreateMedia,
   useDeleteMedia,
   useMediaByBoardingHouseQuery,
+  useMediaByRoomQuery,
 } from "./queries";
 
 const { apiMock } = vi.hoisted(() => ({
@@ -47,6 +48,23 @@ describe("media queries", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(apiMock.get).toHaveBeenCalledWith("api/v1/media/boarding-house/bh1");
+  });
+
+  it("loads media by room id", async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    apiMock.get.mockResolvedValueOnce({
+      data: [{ id: "m1", roomId: "r1", url: "https://example.com/1.jpg" }],
+    });
+
+    const { result } = renderHook(() => useMediaByRoomQuery("r1"), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(apiMock.get).toHaveBeenCalledWith("api/v1/media/room/r1");
   });
 
   it("creates media and invalidates boarding house media key", async () => {
@@ -96,6 +114,7 @@ describe("media queries", () => {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
     });
+    const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
     const removeSpy = vi.spyOn(queryClient, "removeQueries");
     apiMock.delete.mockResolvedValueOnce({});
 
@@ -103,9 +122,12 @@ describe("media queries", () => {
       wrapper: createWrapper(queryClient),
     });
 
-    await result.current.mutateAsync({ id: "m1", boardingHouseId: "bh1" });
+    await result.current.mutateAsync({ id: "m1", roomId: "r1" });
 
     expect(apiMock.delete).toHaveBeenCalledWith("api/v1/media/m1");
+    expect(invalidateSpy).toHaveBeenCalledWith({
+      queryKey: ["media", "room", "r1"],
+    });
     expect(removeSpy).toHaveBeenCalledWith({ queryKey: ["media", "detail", "m1"] });
   });
 });
