@@ -16,12 +16,12 @@ import {
   Typography,
 } from "@mui/material";
 import { useAuth } from "../features/auth/use-auth";
-import { UsersPage } from "../features/users/users-page";
-import { LoginPage } from "../features/auth/login-page";
-import { RegisterPage } from "../features/auth/register-page";
-import { RolesPage } from "../features/roles/roles-page";
+import { UsersPage } from "../features/users/pages/users-page";
+import { LoginPage } from "../features/auth/pages/login-page";
+import { RegisterPage } from "../features/auth/pages/register-page";
+import { RolesPage } from "../features/roles/pages/roles-page";
 import { getToken, isTokenExpired } from "../lib/auth";
-import { BoardingHousesPage } from "../features/boardinghouses/boarding-house-page";
+import { BoardingHousesPage } from "../features/boardinghouses/pages/boarding-house-page";
 
 function Shell({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, role, logout } = useAuth();

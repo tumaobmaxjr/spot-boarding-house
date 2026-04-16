@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Edit, Delete } from "@mui/icons-material";
 import {
   Alert,
   Box,
   Button,
+  Collapse,
   CircularProgress,
   IconButton,
   Paper,
+  Stack,
   Snackbar,
   Table,
   TableBody,
@@ -15,17 +17,21 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import type { AxiosError } from "axios";
-import { formatDateTime } from "../../lib/format-date";
-import { useAuth } from "../auth/use-auth";
+import { formatDateTime } from "../../../lib/format-date";
+import { useAuth } from "../../auth/use-auth";
 import {
   useBoardingHousesQuery,
   useCreateBoardingHouse,
   useDeleteBoardingHouse,
   useUpdateBoardingHouse,
   useOwnersQuery,
-} from "./queries";
-import { BoardingHouseDialog } from "./boarding-house-dialog";
+} from "../queries";
+import { BoardingHouseDialog } from "../dialogs/boarding-house-dialog";
+import { ContactsSection } from "../../contacts/components/contacts-section";
+import { MediaSection } from "../../media/components/media-section";
 
 export function BoardingHousesPage() {
   const { role } = useAuth();
@@ -54,6 +60,7 @@ export function BoardingHousesPage() {
     message: string;
     severity: "success" | "error";
   }>({ open: false, message: "", severity: "success" });
+  const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
 
   if (isLoading) return <CircularProgress />;
   if (isError)
@@ -146,6 +153,13 @@ export function BoardingHousesPage() {
     }
   };
 
+  const toggleExpanded = (id: string) => {
+    setExpandedRows((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
   return (
     <Paper sx={{ p: 2 }}>
       <Box
@@ -166,6 +180,7 @@ export function BoardingHousesPage() {
       <Table size="small">
         <TableHead>
           <TableRow>
+            <TableCell width={56} />
             <TableCell>Name</TableCell>
             <TableCell>Address</TableCell>
             <TableCell>Gender</TableCell>
@@ -178,30 +193,53 @@ export function BoardingHousesPage() {
         </TableHead>
         <TableBody>
           {(data ?? []).map((bh) => (
-            <TableRow key={bh.id}>
-              <TableCell>{bh.name}</TableCell>
-              <TableCell>{bh.address}</TableCell>
-              <TableCell>{bh.allowedGender}</TableCell>
-              {isAdmin && <TableCell>{bh.ownerName ?? "-"}</TableCell>}
-              <TableCell>
-                {bh.latitude.toFixed(4)}, {bh.longitude.toFixed(4)}
-              </TableCell>
-              <TableCell>{formatDateTime(bh.createdAt)}</TableCell>
-              <TableCell>{formatDateTime(bh.updatedAt)}</TableCell>
-              <TableCell align="right">
-                <IconButton size="small" onClick={() => handleEdit(bh)}>
-                  <Edit fontSize="small" />
-                </IconButton>
-                <IconButton
-                  size="small"
-                  color="error"
-                  onClick={() => handleDelete(bh.id)}
-                  disabled={deleteBoardingHouse.isPending}
-                >
-                  <Delete fontSize="small" />
-                </IconButton>
-              </TableCell>
-            </TableRow>
+            <Fragment key={bh.id}>
+              <TableRow>
+                <TableCell>
+                  <IconButton size="small" onClick={() => toggleExpanded(bh.id)}>
+                    {expandedRows[bh.id] ? (
+                      <KeyboardArrowUpIcon fontSize="small" />
+                    ) : (
+                      <KeyboardArrowDownIcon fontSize="small" />
+                    )}
+                  </IconButton>
+                </TableCell>
+                <TableCell>{bh.name}</TableCell>
+                <TableCell>{bh.address}</TableCell>
+                <TableCell>{bh.allowedGender}</TableCell>
+                {isAdmin && <TableCell>{bh.ownerName ?? "-"}</TableCell>}
+                <TableCell>
+                  {bh.latitude.toFixed(4)}, {bh.longitude.toFixed(4)}
+                </TableCell>
+                <TableCell>{formatDateTime(bh.createdAt)}</TableCell>
+                <TableCell>{formatDateTime(bh.updatedAt)}</TableCell>
+                <TableCell align="right">
+                  <IconButton size="small" onClick={() => handleEdit(bh)}>
+                    <Edit fontSize="small" />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    color="error"
+                    onClick={() => handleDelete(bh.id)}
+                    disabled={deleteBoardingHouse.isPending}
+                  >
+                    <Delete fontSize="small" />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell colSpan={isAdmin ? 9 : 8} sx={{ py: 0, borderBottom: 0 }}>
+                  <Collapse in={!!expandedRows[bh.id]} timeout="auto" unmountOnExit>
+                    <Box sx={{ p: 2 }}>
+                      <Stack spacing={2}>
+                        <ContactsSection boardingHouseId={bh.id} />
+                        <MediaSection boardingHouseId={bh.id} />
+                      </Stack>
+                    </Box>
+                  </Collapse>
+                </TableCell>
+              </TableRow>
+            </Fragment>
           ))}
         </TableBody>
       </Table>

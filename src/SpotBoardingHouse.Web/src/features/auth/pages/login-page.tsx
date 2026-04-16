@@ -1,10 +1,10 @@
 import { useLocation, useNavigate, type To } from "react-router-dom";
-import { useAuth } from "./use-auth";
+import { useAuth } from "../use-auth";
 import { useEffect, useState } from "react";
 import { Box, Stack } from "@mui/system";
 import { Alert, Button, Paper, TextField, Typography } from "@mui/material";
 import type { AxiosError } from "axios";
-import { consumeSessionExpired } from "../../lib/auth";
+import { consumeSessionExpired } from "../../../lib/auth";
 
 export function LoginPage() {
   const { login } = useAuth();

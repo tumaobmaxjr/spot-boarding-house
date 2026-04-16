@@ -25,7 +25,7 @@ import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
-import type { OwnerDto } from "./types";
+import type { OwnerDto } from "../types";
 
 const defaultIcon = L.icon({
   iconUrl: markerIcon,

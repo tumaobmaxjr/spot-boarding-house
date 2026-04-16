@@ -14,32 +14,28 @@ import {
   Typography,
 } from "@mui/material";
 import {
-  useCreateUser,
-  useDeleteUser,
+  useCreateRole,
+  useDeleteRole,
   useRolesQuery,
-  useUpdateUser,
-  useUsersQuery,
-} from "./queries";
+  useUpdateRole,
+} from "../queries";
 import { useState } from "react";
-import { Delete, Edit } from "@mui/icons-material";
-import { UserDialog } from "./user-dialog";
+import { RoleDialog } from "../dialogs/role-dialog";
+import { Edit, Delete } from "@mui/icons-material";
 import type { AxiosError } from "axios";
-import { formatDateTime } from "../../lib/format-date";
+import { formatDateTime } from "../../../lib/format-date";
 
-export function UsersPage() {
-  const { data, isLoading, isError, error } = useUsersQuery();
-  const { data: roles } = useRolesQuery();
-  const createUser = useCreateUser();
-  const updateUser = useUpdateUser();
-  const deleteUser = useDeleteUser();
+export function RolesPage() {
+  const { data, isLoading, isError, error } = useRolesQuery();
+  const createRole = useCreateRole();
+  const updateRole = useUpdateRole();
+  const deleteRole = useDeleteRole();
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<{
+  const [editingRole, setEditingRole] = useState<{
     id: string;
-    roleId: string;
-    firstName: string;
-    lastName: string;
-    email: string;
+    name: string;
+    description: string | null;
   } | null>(null);
 
   const [dialogKey, setDialogKey] = useState(0);
@@ -58,72 +54,67 @@ export function UsersPage() {
   if (isError)
     return (
       <Alert severity="error">
-        {(error as Error).message || "Failed to load users."}
+        {(error as Error).message || "Failed to load roles."}
       </Alert>
     );
 
   const handleCreate = () => {
     setDialogKey((key) => key + 1);
-    setEditingUser(null);
+    setEditingRole(null);
     setDialogOpen(true);
   };
 
-  const handleEdit = (user: {
+  const handleEdit = (role: {
     id: string;
-    roleId: string;
-    firstName: string;
-    lastName: string;
-    email: string;
+    name: string;
+    description: string | null;
   }) => {
-    setEditingUser(user);
+    setEditingRole(role);
     setDialogOpen(true);
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this user?")) return;
+    if (!window.confirm("Are you sure you want to delete this role?")) return;
     try {
-      await deleteUser.mutateAsync(id);
+      await deleteRole.mutateAsync(id);
       setSnackbar({
         open: true,
-        message: "User deleted successfully.",
+        message: "Role deleted successfully.",
         severity: "success",
       });
     } catch (err) {
       const axiosError = err as AxiosError<{ message?: string }>;
       setSnackbar({
         open: true,
-        message: axiosError.response?.data?.message ?? "Failed to delete user.",
+        message: axiosError.response?.data?.message ?? "Failed to delete role.",
         severity: "error",
       });
     }
   };
 
   const handleSubmit = async (payload: {
-    roleId: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    password?: string;
+    name: string;
+    description?: string;
   }) => {
     try {
-      if (editingUser) {
-        await updateUser.mutateAsync({ id: editingUser.id, payload });
+      if (editingRole) {
+        await updateRole.mutateAsync({
+          id: editingRole.id,
+          payload: {
+            name: payload.name,
+            description: payload.description,
+          },
+        });
         setSnackbar({
           open: true,
-          message: "User updated successfully.",
+          message: "Role updated successfully.",
           severity: "success",
         });
       } else {
-        await createUser.mutateAsync({
-          roleId: payload.roleId,
-          firstName: payload.firstName,
-          lastName: payload.lastName,
-          email: payload.email,
-          password: payload.password ?? "",
-        });
+        await createRole.mutateAsync(payload);
         setSnackbar({
           open: true,
-          message: "User created successfully.",
+          message: "Role created successfully.",
           severity: "success",
         });
       }
@@ -149,42 +140,38 @@ export function UsersPage() {
         }}
       >
         <Typography variant="h6" sx={{ mb: 2 }}>
-          Users
+          Roles
         </Typography>
         <Button variant="contained" size="small" onClick={handleCreate}>
-          + New User
+          + New Role
         </Button>
       </Box>
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell>Email</TableCell>
-            <TableCell>First Name</TableCell>
-            <TableCell>Last Name</TableCell>
-            <TableCell>Role</TableCell>
+            <TableCell>Name</TableCell>
+            <TableCell>Description</TableCell>
             <TableCell>Created At</TableCell>
             <TableCell>Updated At</TableCell>
             <TableCell align="right">Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {(data ?? []).map((user) => (
-            <TableRow key={user.id}>
-              <TableCell>{user.email}</TableCell>
-              <TableCell>{user.firstName}</TableCell>
-              <TableCell>{user.lastName}</TableCell>
-              <TableCell>{user.roleName}</TableCell>
-              <TableCell>{formatDateTime(user.createdAt)}</TableCell>
-              <TableCell>{formatDateTime(user.updatedAt)}</TableCell>
+          {(data ?? []).map((role) => (
+            <TableRow key={role.id}>
+              <TableCell>{role.name}</TableCell>
+              <TableCell>{role.description ?? "-"}</TableCell>
+              <TableCell>{formatDateTime(role.createdAt)}</TableCell>
+              <TableCell>{formatDateTime(role.updatedAt)}</TableCell>
               <TableCell align="right">
-                <IconButton size="small" onClick={() => handleEdit(user)}>
+                <IconButton size="small" onClick={() => handleEdit(role)}>
                   <Edit fontSize="small" />
                 </IconButton>
                 <IconButton
                   size="small"
                   color="error"
-                  onClick={() => handleDelete(user.id)}
-                  disabled={deleteUser.isPending}
+                  onClick={() => handleDelete(role.id)}
+                  disabled={deleteRole.isPending}
                 >
                   <Delete fontSize="small" />
                 </IconButton>
@@ -194,14 +181,13 @@ export function UsersPage() {
         </TableBody>
       </Table>
 
-      <UserDialog
+      <RoleDialog
         key={dialogKey}
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
         onSubmit={handleSubmit}
-        initialData={editingUser}
-        roles={roles ?? []}
-        isLoading={createUser.isPending || updateUser.isPending}
+        initialData={editingRole}
+        isLoading={createRole.isPending || updateRole.isPending}
       />
 
       <Snackbar

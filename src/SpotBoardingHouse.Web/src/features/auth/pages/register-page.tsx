@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "./use-auth";
+import { useAuth } from "../use-auth";
 import { useState } from "react";
 import type { AxiosError } from "axios";
 import {

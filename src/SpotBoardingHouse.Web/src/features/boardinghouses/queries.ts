@@ -39,7 +39,7 @@ export function useCreateBoardingHouse() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["boarding-houses"] });
+      queryClient.invalidateQueries({ queryKey: ["boardinghouses"] });
     },
   });
 }
@@ -69,7 +69,7 @@ export function useUpdateBoardingHouse() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["boarding-houses"] });
+      queryClient.invalidateQueries({ queryKey: ["boardinghouses"] });
     },
   });
 }
@@ -81,7 +81,7 @@ export function useDeleteBoardingHouse() {
       await api.delete(`api/v1/boardinghouses/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["boarding-houses"] });
+      queryClient.invalidateQueries({ queryKey: ["boardinghouses"] });
     },
   });
 }
