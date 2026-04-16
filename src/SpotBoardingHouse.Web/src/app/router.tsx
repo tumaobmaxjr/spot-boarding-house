@@ -22,6 +22,7 @@ import { RegisterPage } from "../features/auth/pages/register-page";
 import { RolesPage } from "../features/roles/pages/roles-page";
 import { getToken, isTokenExpired } from "../lib/auth";
 import { BoardingHousesPage } from "../features/boardinghouses/pages/boarding-house-page";
+import { RoomsPage } from "../features/rooms/pages/rooms-page";
 
 function Shell({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, role, logout } = useAuth();
@@ -46,9 +47,12 @@ function Shell({ children }: { children: React.ReactNode }) {
               </>
             )}
             {isAuthenticated && (role === "Owner" || role === "Admin") && (
-              <Button onClick={() => navigate("/boarding-houses")}>
-                Boarding Houses
-              </Button>
+              <>
+                <Button onClick={() => navigate("/boarding-houses")}>
+                  Boarding Houses
+                </Button>
+                <Button onClick={() => navigate("/rooms")}>Rooms</Button>
+              </>
             )}
             {isAuthenticated ? (
               <Button
@@ -202,6 +206,7 @@ export function AppRouter() {
 
         <Route element={<ProtectedOwnerRoute />}>
           <Route path="/boarding-houses" element={<BoardingHousesPage />} />
+          <Route path="/rooms" element={<RoomsPage />} />
         </Route>
 
         <Route path="/forbidden" element={<ForbiddenPage />} />
