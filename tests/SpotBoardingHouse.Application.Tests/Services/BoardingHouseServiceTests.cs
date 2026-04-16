@@ -320,20 +320,12 @@ namespace SpotBoardingHouse.Application.Tests.Services
         {
             var id = Guid.NewGuid();
             var userId = Guid.NewGuid();
-            _repo.Setup(r => r.ExistsAsync(id)).ReturnsAsync(true);
-            _repo.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(new BoardingHouse
-            {
-                Id = id,
-                UserId = userId,
-                Name = "BH",
-                AllowedGender = Gender.Mixed,
-                Address = "Addr"
-            });
+            _repo.Setup(r => r.SoftDeleteCascadeAsync(id, userId)).ReturnsAsync(true);
 
             var result = await _service.DeleteAsync(id, userId);
 
             result.Should().BeTrue();
-            _repo.Verify(r => r.DeleteAsync(id), Times.Once);
+            _repo.Verify(r => r.SoftDeleteCascadeAsync(id, userId), Times.Once);
         }
 
         [Fact]
@@ -342,20 +334,12 @@ namespace SpotBoardingHouse.Application.Tests.Services
             var id = Guid.NewGuid();
             var ownerA = Guid.NewGuid();
             var ownerB = Guid.NewGuid();
-            _repo.Setup(r => r.ExistsAsync(id)).ReturnsAsync(true);
-            _repo.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(new BoardingHouse
-            {
-                Id = id,
-                UserId = ownerA,
-                Name = "BH",
-                AllowedGender = Gender.Mixed,
-                Address = "Addr"
-            });
+            _repo.Setup(r => r.SoftDeleteCascadeAsync(id, ownerB)).ReturnsAsync(false);
 
             var result = await _service.DeleteAsync(id, ownerB);
 
             result.Should().BeFalse();
-            _repo.Verify(r => r.DeleteAsync(It.IsAny<Guid>()), Times.Never);
+            _repo.Verify(r => r.SoftDeleteCascadeAsync(id, ownerB), Times.Once);
         }
 
         [Fact]
@@ -364,13 +348,12 @@ namespace SpotBoardingHouse.Application.Tests.Services
             var id = Guid.NewGuid();
             var userId = Guid.NewGuid();
 
-            _repo.Setup(r => r.GetByIdAsync(id)).ReturnsAsync((BoardingHouse?)null);
+            _repo.Setup(r => r.SoftDeleteCascadeAsync(id, userId)).ReturnsAsync(false);
 
             var result = await _service.DeleteAsync(id, userId);
 
             result.Should().BeFalse();
-            _repo.Verify(r => r.GetByIdAsync(id), Times.Once);
-            _repo.Verify(r => r.DeleteAsync(It.IsAny<Guid>()), Times.Never);
+            _repo.Verify(r => r.SoftDeleteCascadeAsync(id, userId), Times.Once);
         }
     }
 }
