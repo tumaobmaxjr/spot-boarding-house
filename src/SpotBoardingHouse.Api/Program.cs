@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
@@ -123,6 +124,12 @@ namespace SpotBoardingHouse.Api
 
             var app = builder.Build();
 
+            var uploadsRootPath = builder.Configuration["Uploads:RootPath"] ?? "uploads";
+            var uploadsPublicBasePath = builder.Configuration["Uploads:PublicBasePath"] ?? "/uploads";
+
+            var uploadsPhysicalPath = Path.Combine(Directory.GetCurrentDirectory(), uploadsRootPath);
+            Directory.CreateDirectory(uploadsPhysicalPath);
+
             using (var scope = app.Services.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -137,6 +144,11 @@ namespace SpotBoardingHouse.Api
             }
 
             app.UseHttpsRedirection();
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(uploadsPhysicalPath),
+                RequestPath = uploadsPublicBasePath
+            });
             app.UseCors("Web");
             app.UseAuthentication();
             app.UseAuthorization();

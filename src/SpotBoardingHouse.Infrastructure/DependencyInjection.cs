@@ -1,6 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using SpotBoardingHouse.Application.Interfaces.Repositories;
+using SpotBoardingHouse.Application.Interfaces.Services;
 using SpotBoardingHouse.Infrastructure.Repositories;
+using SpotBoardingHouse.Infrastructure.Services;
 
 namespace SpotBoardingHouse.Infrastructure
 {
@@ -21,6 +23,7 @@ namespace SpotBoardingHouse.Infrastructure
 
             services.AddScoped<IContactRepository, ContactRepository>();
             services.AddScoped<IMediaRepository, MediaRepository>();
+            services.AddScoped<IMediaAssetStorageService, LocalMediaAssetStorageService>();
             return services;
         }
     }
