@@ -6,6 +6,7 @@ namespace SpotBoardingHouse.Application.Interfaces.Services
     {
         Task<IEnumerable<RoomDto>> GetAllAsync();
         Task<IEnumerable<RoomDto>> GetAllByUserIdAsync(Guid userId);
+        Task<IEnumerable<RoomDto>> GetAllByBoardingHouseIdAsync(Guid boardingHouseId);
         Task<RoomDto?> GetByIdAsync(Guid id);
         Task<RoomDto> CreateAsync(Guid boardingHouseId, CreateRoomDto createRoomDto);
         Task<RoomDto?> UpdateAsync(Guid id, Guid boardingHouseId, UpdateRoomDto updateRoomDto);

@@ -6,6 +6,8 @@ import {
   Alert,
   Box,
   Button,
+  Chip,
+  Divider,
   Paper,
   Stack,
   TextField,
@@ -42,16 +44,62 @@ export function RegisterPage() {
   };
 
   return (
-    <Box sx={{ display: "grid", placeItems: "center", minHeight: "70vh" }}>
+    <Box
+      sx={{
+        minHeight: "72vh",
+        display: "grid",
+        gridTemplateColumns: { xs: "1fr", md: "1.1fr 1fr" },
+        gap: 0,
+        borderRadius: 3,
+        overflow: "hidden",
+        border: "1px solid",
+        borderColor: "divider",
+        bgcolor: "background.paper",
+      }}
+    >
+      <Box
+        sx={{
+          display: { xs: "none", md: "flex" },
+          flexDirection: "column",
+          justifyContent: "space-between",
+          p: 4,
+          background:
+            "linear-gradient(140deg, #0f172a 0%, #1e293b 45%, #0b3a4b 100%)",
+          color: "#e2e8f0",
+        }}
+      >
+        <Box>
+          <Chip
+            size="small"
+            label="SpotBoardingHouse"
+            sx={{
+              bgcolor: "rgba(148,163,184,0.2)",
+              color: "#e2e8f0",
+              fontWeight: 600,
+            }}
+          />
+          <Typography variant="h4" fontWeight={800} sx={{ mt: 2, lineHeight: 1.2 }}>
+            Create your account.
+          </Typography>
+          <Typography sx={{ mt: 1.5, color: "#cbd5e1", maxWidth: 360 }}>
+            Register to start managing boarding houses and rooms. Admins and Owners
+            can both sign in from the same access page.
+          </Typography>
+        </Box>
+        <Typography variant="body2" sx={{ color: "#94a3b8" }}>
+          Owner registration with admin-ready sign-in flow.
+        </Typography>
+      </Box>
+
       <Paper
         sx={{
-          p: { xs: 2.5, md: 3.5 },
+          p: { xs: 2.5, md: 4 },
           width: "100%",
-          maxWidth: 440,
-          borderRadius: 3,
-          border: "1px solid",
-          borderColor: "divider",
-          bgcolor: "background.paper",
+          borderRadius: 0,
+          border: 0,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
         }}
         elevation={0}
       >
@@ -61,6 +109,7 @@ export function RegisterPage() {
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           Register as a boarding house owner.
         </Typography>
+        <Divider sx={{ mb: 2 }} />
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}

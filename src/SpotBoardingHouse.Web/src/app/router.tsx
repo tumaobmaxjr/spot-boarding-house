@@ -41,6 +41,7 @@ import { RolesPage } from "../features/roles/pages/roles-page";
 import { getToken, isTokenExpired } from "../lib/auth";
 import { BoardingHousesPage } from "../features/boardinghouses/pages/boarding-house-page";
 import { RoomsPage } from "../features/rooms/pages/rooms-page";
+import { HomeMapPage } from "../features/home/pages/home-map-page";
 
 type NavItem = {
   label: string;
@@ -78,6 +79,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const drawerWidth = 280;
   const showDashboardShell = isAuthenticated && (role === "Owner" || role === "Admin");
+  const isPublicDiscoveryRoute = location.pathname === "/";
 
   const navItems = useMemo(() => {
     const items: NavItem[] = [];
@@ -304,6 +306,15 @@ function Shell({ children }: { children: React.ReactNode }) {
     </Box>
   );
 
+  if (isPublicDiscoveryRoute) {
+    return (
+      <Box sx={{ minHeight: "100vh", bgcolor: dashboardTheme.pageBg }}>
+        <CssBaseline />
+        {children}
+      </Box>
+    );
+  }
+
   if (!showDashboardShell) {
     return (
       <Box sx={{ minHeight: "100vh", bgcolor: dashboardTheme.pageBg }}>
@@ -499,9 +510,14 @@ function ProtectedOwnerRoute() {
 }
 
 function HomeRedirect() {
-  const { role } = useAuth();
-  if (role === "Owner") return <Navigate to="/boarding-houses" replace />;
-  return <Navigate to="/admin/users" replace />;
+  const { isAuthenticated, role } = useAuth();
+
+  if (isAuthenticated) {
+    if (role === "Admin") return <Navigate to="/admin/users" replace />;
+    if (role === "Owner") return <Navigate to="/boarding-houses" replace />;
+  }
+
+  return <HomeMapPage />;
 }
 
 function ForbiddenPage() {

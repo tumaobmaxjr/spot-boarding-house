@@ -27,6 +27,12 @@ namespace SpotBoardingHouse.Application.Services
             return rooms.Select(MapToDto);
         }
 
+        public async Task<IEnumerable<RoomDto>> GetAllByBoardingHouseIdAsync(Guid boardingHouseId)
+        {
+            var rooms = await _roomRepository.GetAllByBoardingHouseIdAsync(boardingHouseId);
+            return rooms.Select(MapToDto);
+        }
+
         public async Task<RoomDto?> GetByIdAsync(Guid id)
         {
             var room = await _roomRepository.GetByIdAsync(id);
