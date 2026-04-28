@@ -2,9 +2,12 @@ import { useState } from "react";
 import { Delete, Edit } from "@mui/icons-material";
 import {
   Alert,
+  Avatar,
   Box,
   Button,
   Chip,
+  Dialog,
+  DialogContent,
   IconButton,
   Link,
   Snackbar,
@@ -25,6 +28,7 @@ import {
 } from "../queries";
 import { MediaDialog } from "../dialogs/media-dialog";
 import type { CreateMediaPayload, MediaDto, UpdateMediaPayload } from "../types";
+import { resolveMediaUrl } from "../url";
 
 interface MediaSectionProps {
   boardingHouseId: string;
@@ -39,6 +43,7 @@ export function MediaSection({ boardingHouseId }: MediaSectionProps) {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMedia, setEditingMedia] = useState<MediaDto | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -134,6 +139,7 @@ export function MediaSection({ boardingHouseId }: MediaSectionProps) {
       <Table size="small">
         <TableHead>
           <TableRow>
+            <TableCell>Image</TableCell>
             <TableCell>URL</TableCell>
             <TableCell>Primary</TableCell>
             <TableCell>Order</TableCell>
@@ -144,14 +150,42 @@ export function MediaSection({ boardingHouseId }: MediaSectionProps) {
         <TableBody>
           {!isLoading && (data ?? []).length === 0 && (
             <TableRow>
-              <TableCell colSpan={5}>No media yet.</TableCell>
+              <TableCell colSpan={6}>No media yet.</TableCell>
             </TableRow>
           )}
-          {(data ?? []).map((media) => (
+          {(data ?? []).map((media) => {
+            const mediaUrl = resolveMediaUrl(media.url);
+            return (
             <TableRow key={media.id}>
               <TableCell>
-                <Link href={media.url} target="_blank" rel="noreferrer" underline="hover">
-                  {media.url}
+                <IconButton
+                  size="small"
+                  onClick={() => setPreviewUrl(mediaUrl)}
+                  sx={{ p: 0.25 }}
+                >
+                  <Avatar
+                    variant="rounded"
+                    src={mediaUrl}
+                    alt="Media preview"
+                    imgProps={{ loading: "lazy" }}
+                    sx={{
+                      width: 56,
+                      height: 56,
+                      bgcolor: "grey.200",
+                      color: "text.secondary",
+                      fontSize: 10,
+                      ".MuiAvatar-img": {
+                        objectFit: "cover",
+                      },
+                    }}
+                  >
+                    IMG
+                  </Avatar>
+                </IconButton>
+              </TableCell>
+              <TableCell>
+                <Link href={mediaUrl} target="_blank" rel="noreferrer" underline="hover">
+                  View image
                 </Link>
               </TableCell>
               <TableCell>
@@ -183,7 +217,8 @@ export function MediaSection({ boardingHouseId }: MediaSectionProps) {
                 </IconButton>
               </TableCell>
             </TableRow>
-          ))}
+            );
+          })}
         </TableBody>
       </Table>
 
@@ -220,6 +255,30 @@ export function MediaSection({ boardingHouseId }: MediaSectionProps) {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      <Dialog
+        open={!!previewUrl}
+        onClose={() => setPreviewUrl(null)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogContent sx={{ p: 1, bgcolor: "black" }}>
+          {previewUrl && (
+            <Box
+              component="img"
+              src={previewUrl}
+              alt="Media preview"
+              sx={{
+                width: "100%",
+                maxHeight: "80vh",
+                objectFit: "contain",
+                display: "block",
+                borderRadius: 1,
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 }
