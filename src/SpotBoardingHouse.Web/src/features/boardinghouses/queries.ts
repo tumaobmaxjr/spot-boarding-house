@@ -95,6 +95,7 @@ export function useOwnersQuery() {
           id: string;
           firstName: string;
           lastName: string;
+          email: string;
           roleName: string;
         }[]
       >("/api/v1/users");
@@ -104,6 +105,7 @@ export function useOwnersQuery() {
           id: u.id,
           firstName: u.firstName,
           lastName: u.lastName,
+          email: u.email,
         }));
     },
   });

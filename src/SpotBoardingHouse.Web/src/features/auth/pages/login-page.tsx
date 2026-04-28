@@ -1,8 +1,16 @@
-import { useLocation, useNavigate, type To } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../use-auth";
 import { useEffect, useState } from "react";
 import { Box, Stack } from "@mui/system";
-import { Alert, Button, Paper, TextField, Typography } from "@mui/material";
+import {
+  Alert,
+  Button,
+  Chip,
+  Divider,
+  Paper,
+  TextField,
+  Typography,
+} from "@mui/material";
 import type { AxiosError } from "axios";
 import { consumeSessionExpired } from "../../../lib/auth";
 
@@ -14,7 +22,7 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const location = useLocation();
-  const fromState = location.state as { reason?: string; from?: To } | null;
+  const fromState = location.state as { reason?: string; from?: unknown } | null;
   const [showSessionExpired] = useState(() => {
     const reasonFromState = fromState?.reason === "session-expired";
     const reasonFromQuery = new URLSearchParams(location.search).get("reason");
@@ -24,7 +32,6 @@ export function LoginPage() {
       consumeSessionExpired()
     );
   });
-  const from: To = fromState?.from ?? "/";
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -55,7 +62,7 @@ export function LoginPage() {
 
     try {
       await login({ email, password });
-      navigate(from, { replace: true });
+      navigate("/", { replace: true });
     } catch (err) {
       const axiosError = err as AxiosError<{ message?: string }>;
       if (axiosError.response?.status === 401) {
@@ -73,14 +80,71 @@ export function LoginPage() {
   };
 
   return (
-    <Box sx={{ display: "grid", placeItems: "center", minHeight: "70vh" }}>
-      <Paper sx={{ p: 4, width: "100%", maxWidth: 420 }} elevation={6}>
+    <Box
+      sx={{
+        minHeight: "72vh",
+        display: "grid",
+        gridTemplateColumns: { xs: "1fr", md: "1.1fr 1fr" },
+        gap: 0,
+        borderRadius: 3,
+        overflow: "hidden",
+        border: "1px solid",
+        borderColor: "divider",
+        bgcolor: "background.paper",
+      }}
+    >
+      <Box
+        sx={{
+          display: { xs: "none", md: "flex" },
+          flexDirection: "column",
+          justifyContent: "space-between",
+          p: 4,
+          background:
+            "linear-gradient(140deg, #0f172a 0%, #1e293b 45%, #0b3a4b 100%)",
+          color: "#e2e8f0",
+        }}
+      >
+        <Box>
+          <Chip
+            size="small"
+            label="SpotBoardingHouse"
+            sx={{
+              bgcolor: "rgba(148,163,184,0.2)",
+              color: "#e2e8f0",
+              fontWeight: 600,
+            }}
+          />
+          <Typography variant="h4" fontWeight={800} sx={{ mt: 2, lineHeight: 1.2 }}>
+            Welcome back.
+          </Typography>
+          <Typography sx={{ mt: 1.5, color: "#cbd5e1", maxWidth: 360 }}>
+            Sign in to manage boarding houses, rooms, contacts, and media in one place.
+          </Typography>
+        </Box>
+        <Typography variant="body2" sx={{ color: "#94a3b8" }}>
+          Secure access for Owners and Admins.
+        </Typography>
+      </Box>
+
+      <Paper
+        sx={{
+          p: { xs: 2.5, md: 4 },
+          width: "100%",
+          borderRadius: 0,
+          border: 0,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+        }}
+        elevation={0}
+      >
         <Typography variant="h5" fontWeight={700} gutterBottom>
           Sign in
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           Sign in to your account.
         </Typography>
+        <Divider sx={{ mb: 2 }} />
         {showSessionExpired && (
           <Alert severity="info" sx={{ mb: 2 }}>
             Session expired, please sign in again.
@@ -110,7 +174,7 @@ export function LoginPage() {
             <Button type="submit" variant="contained" disabled={submitting}>
               {submitting ? "Signing in..." : "Sign in"}
             </Button>
-            <Button variant="text" onClick={() => navigate("/register")}>
+            <Button variant="outlined" onClick={() => navigate("/register")}>
               Don't have an account? Register
             </Button>
           </Stack>

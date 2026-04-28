@@ -15,6 +15,7 @@ import {
   TableBody,
   TableCell,
   TableHead,
+  TablePagination,
   TableRow,
   Typography,
 } from "@mui/material";
@@ -42,6 +43,8 @@ export function RoomMediaSection({ roomId }: RoomMediaSectionProps) {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMedia, setEditingMedia] = useState<MediaDto | null>(null);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -137,13 +140,13 @@ export function RoomMediaSection({ roomId }: RoomMediaSectionProps) {
 
       <Table size="small">
         <TableHead>
-          <TableRow>
-            <TableCell>Image</TableCell>
-            <TableCell>URL</TableCell>
-            <TableCell>Primary</TableCell>
-            <TableCell>Order</TableCell>
-            <TableCell>Updated At</TableCell>
-            <TableCell align="right">Actions</TableCell>
+          <TableRow sx={{ bgcolor: "grey.100" }}>
+            <TableCell sx={{ fontWeight: 700 }}>Image</TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>URL</TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>Primary</TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>Order</TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>Updated At</TableCell>
+            <TableCell align="right" sx={{ fontWeight: 700 }}>Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -152,7 +155,9 @@ export function RoomMediaSection({ roomId }: RoomMediaSectionProps) {
               <TableCell colSpan={6}>No media yet.</TableCell>
             </TableRow>
           )}
-          {(data ?? []).map((media) => {
+          {(data ?? [])
+            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+            .map((media) => {
             const mediaUrl = resolveMediaUrl(media.url);
             return (
             <TableRow key={media.id}>
@@ -220,6 +225,18 @@ export function RoomMediaSection({ roomId }: RoomMediaSectionProps) {
           })}
         </TableBody>
       </Table>
+      <TablePagination
+        component="div"
+        count={(data ?? []).length}
+        page={page}
+        onPageChange={(_e, newPage) => setPage(newPage)}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={(e) => {
+          setRowsPerPage(parseInt(e.target.value, 10));
+          setPage(0);
+        }}
+        rowsPerPageOptions={[5, 10]}
+      />
 
       <MediaDialog
         open={dialogOpen}

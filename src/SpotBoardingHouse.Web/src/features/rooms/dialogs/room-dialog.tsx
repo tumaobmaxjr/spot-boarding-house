@@ -1,4 +1,5 @@
 import {
+  Autocomplete,
   Button,
   Dialog,
   DialogActions,
@@ -6,10 +7,8 @@ import {
   DialogTitle,
   FormControl,
   FormHelperText,
-  InputLabel,
-  MenuItem,
-  Select,
   TextField,
+  Typography,
 } from "@mui/material";
 import { useState } from "react";
 import type { CreateRoomPayload, UpdateRoomPayload } from "../types";
@@ -25,7 +24,12 @@ interface RoomDialogProps {
     occupiedSlots: number;
     additionalDescription: string | null;
   } | null;
-  boardingHouses: { id: string; name: string }[];
+  boardingHouses: {
+    id: string;
+    name: string;
+    address?: string;
+    ownerName?: string;
+  }[];
   isLoading?: boolean;
 }
 
@@ -122,22 +126,35 @@ export function RoomDialog({
         >
           {!isEdit && (
             <FormControl error={!!errors.boardingHouseId} fullWidth>
-              <InputLabel id="room-boarding-house-label">Boarding House</InputLabel>
-              <Select
-                labelId="room-boarding-house-label"
-                label="Boarding House"
-                value={boardingHouseId}
-                onChange={(e) => setBoardingHouseId(e.target.value)}
-              >
-                {boardingHouses.map((bh) => (
-                  <MenuItem key={bh.id} value={bh.id}>
-                    {bh.name}
-                  </MenuItem>
-                ))}
-              </Select>
-              {errors.boardingHouseId && (
-                <FormHelperText>{errors.boardingHouseId}</FormHelperText>
-              )}
+              <Autocomplete
+                options={boardingHouses}
+                value={boardingHouses.find((bh) => bh.id === boardingHouseId) ?? null}
+                onChange={(_event, value) => setBoardingHouseId(value?.id ?? "")}
+                getOptionLabel={(option) => option.name}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                renderOption={(props, option) => (
+                  <li {...props} key={option.id}>
+                    <div>
+                      <Typography variant="body2" fontWeight={600}>
+                        {option.name}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {option.address ?? "No address"}
+                        {option.ownerName ? ` - Owner: ${option.ownerName}` : ""}
+                      </Typography>
+                    </div>
+                  </li>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Boarding House"
+                    placeholder="Search boarding house"
+                    error={!!errors.boardingHouseId}
+                  />
+                )}
+              />
+              {errors.boardingHouseId && <FormHelperText>{errors.boardingHouseId}</FormHelperText>}
             </FormControl>
           )}
 

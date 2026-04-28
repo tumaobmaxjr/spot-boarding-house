@@ -43,7 +43,18 @@ export function RegisterPage() {
 
   return (
     <Box sx={{ display: "grid", placeItems: "center", minHeight: "70vh" }}>
-      <Paper sx={{ p: 4, width: "100%", maxWidth: 420 }} elevation={6}>
+      <Paper
+        sx={{
+          p: { xs: 2.5, md: 3.5 },
+          width: "100%",
+          maxWidth: 440,
+          borderRadius: 3,
+          border: "1px solid",
+          borderColor: "divider",
+          bgcolor: "background.paper",
+        }}
+        elevation={0}
+      >
         <Typography variant="h5" fontWeight={700} gutterBottom>
           Create Account
         </Typography>
@@ -92,7 +103,7 @@ export function RegisterPage() {
             <Button type="submit" variant="contained" disabled={submitting}>
               {submitting ? "Creating account..." : "Create Account"}
             </Button>
-            <Button variant="text" onClick={() => navigate("/login")}>
+            <Button variant="outlined" onClick={() => navigate("/login")}>
               Already have an account? Sign in
             </Button>
           </Stack>

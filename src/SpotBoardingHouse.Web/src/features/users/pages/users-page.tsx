@@ -10,6 +10,8 @@ import {
   TableBody,
   TableCell,
   TableHead,
+  TableSortLabel,
+  TablePagination,
   TableRow,
   Typography,
 } from "@mui/material";
@@ -43,6 +45,29 @@ export function UsersPage() {
   } | null>(null);
 
   const [dialogKey, setDialogKey] = useState(0);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [orderBy, setOrderBy] = useState<"email" | "firstName" | "lastName" | "roleName" | "createdAt">("createdAt");
+  const [order, setOrder] = useState<"asc" | "desc">("desc");
+
+  const handleSort = (field: "email" | "firstName" | "lastName" | "roleName" | "createdAt") => {
+    if (orderBy === field) {
+      setOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+      return;
+    }
+    setOrderBy(field);
+    setOrder("asc");
+  };
+
+  const sortedData = [...(data ?? [])].sort((a, b) => {
+    const direction = order === "asc" ? 1 : -1;
+    const av = a[orderBy];
+    const bv = b[orderBy];
+    if (orderBy === "createdAt") {
+      return (new Date(av).getTime() - new Date(bv).getTime()) * direction;
+    }
+    return String(av).localeCompare(String(bv)) * direction;
+  });
 
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -157,18 +182,30 @@ export function UsersPage() {
       </Box>
       <Table size="small">
         <TableHead>
-          <TableRow>
-            <TableCell>Email</TableCell>
-            <TableCell>First Name</TableCell>
-            <TableCell>Last Name</TableCell>
-            <TableCell>Role</TableCell>
-            <TableCell>Created At</TableCell>
-            <TableCell>Updated At</TableCell>
-            <TableCell align="right">Actions</TableCell>
+          <TableRow sx={{ bgcolor: "grey.100" }}>
+            <TableCell sx={{ fontWeight: 700 }}>
+              <TableSortLabel active={orderBy === "email"} direction={orderBy === "email" ? order : "asc"} onClick={() => handleSort("email")}>Email</TableSortLabel>
+            </TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>
+              <TableSortLabel active={orderBy === "firstName"} direction={orderBy === "firstName" ? order : "asc"} onClick={() => handleSort("firstName")}>First Name</TableSortLabel>
+            </TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>
+              <TableSortLabel active={orderBy === "lastName"} direction={orderBy === "lastName" ? order : "asc"} onClick={() => handleSort("lastName")}>Last Name</TableSortLabel>
+            </TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>
+              <TableSortLabel active={orderBy === "roleName"} direction={orderBy === "roleName" ? order : "asc"} onClick={() => handleSort("roleName")}>Role</TableSortLabel>
+            </TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>
+              <TableSortLabel active={orderBy === "createdAt"} direction={orderBy === "createdAt" ? order : "asc"} onClick={() => handleSort("createdAt")}>Created At</TableSortLabel>
+            </TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>Updated At</TableCell>
+            <TableCell align="right" sx={{ fontWeight: 700 }}>Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {(data ?? []).map((user) => (
+          {sortedData
+            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+            .map((user) => (
             <TableRow key={user.id}>
               <TableCell>{user.email}</TableCell>
               <TableCell>{user.firstName}</TableCell>
@@ -190,9 +227,21 @@ export function UsersPage() {
                 </IconButton>
               </TableCell>
             </TableRow>
-          ))}
+            ))}
         </TableBody>
       </Table>
+      <TablePagination
+        component="div"
+        count={(data ?? []).length}
+        page={page}
+        onPageChange={(_e, newPage) => setPage(newPage)}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={(e) => {
+          setRowsPerPage(parseInt(e.target.value, 10));
+          setPage(0);
+        }}
+        rowsPerPageOptions={[5, 10, 25]}
+      />
 
       <UserDialog
         key={dialogKey}

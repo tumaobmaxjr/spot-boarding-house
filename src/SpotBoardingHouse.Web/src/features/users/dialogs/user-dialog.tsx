@@ -1,4 +1,5 @@
 import {
+  Autocomplete,
   Button,
   Dialog,
   DialogActions,
@@ -6,10 +7,8 @@ import {
   DialogTitle,
   FormControl,
   FormHelperText,
-  InputLabel,
-  MenuItem,
-  Select,
   TextField,
+  Typography,
 } from "@mui/material";
 import { useState } from "react";
 
@@ -29,7 +28,7 @@ interface UserDialogProps {
     lastName: string;
     email: string;
   } | null;
-  roles: { id: string; name: string }[];
+  roles: { id: string; name: string; description: string | null }[];
   isLoading?: boolean;
 }
 
@@ -42,7 +41,7 @@ export function UserDialog({
   isLoading,
 }: UserDialogProps) {
   const isEdit = !!initialData;
-  const [roleId, setRoleId] = useState(initialData?.roleId ?? "");
+  const [roleId, setRoleId] = useState(initialData?.roleId ?? roles?.[0]?.id ?? "");
   const [firstName, setFirstName] = useState(initialData?.firstName ?? "");
   const [lastName, setLastName] = useState(initialData?.lastName ?? "");
   const [email, setEmail] = useState(initialData?.email ?? "");
@@ -88,19 +87,42 @@ export function UserDialog({
           }}
         >
           <FormControl error={!!errors.roleId} fullWidth>
-            <InputLabel id="role-label">Role</InputLabel>
-            <Select
-              labelId="role-label"
-              label="Role"
-              value={roleId}
-              onChange={(e) => setRoleId(e.target.value)}
-            >
-              {roles.map((role) => (
-                <MenuItem key={role.id} value={role.id}>
-                  {role.name}
-                </MenuItem>
-              ))}
-            </Select>
+            <Autocomplete
+              options={roles}
+              value={roles.find((role) => role.id === roleId) ?? null}
+              onChange={(_event, value) => setRoleId(value?.id ?? "")}
+              getOptionLabel={(option) => option.name}
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              filterOptions={(options, state) => {
+                const q = state.inputValue.trim().toLowerCase();
+                if (!q) return options;
+                return options.filter((o) => {
+                  const name = o.name.toLowerCase();
+                  const shortId = o.id.slice(0, 8).toLowerCase();
+                  return name.includes(q) || shortId.includes(q);
+                });
+              }}
+              renderOption={(props, option) => (
+                <li {...props} key={option.id}>
+                  <div>
+                    <Typography variant="body2" fontWeight={600}>
+                      {option.name}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {option.description?.trim() || "No description"}
+                    </Typography>
+                  </div>
+                </li>
+              )}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Role"
+                  placeholder="Search role"
+                  error={!!errors.roleId}
+                />
+              )}
+            />
             {errors.roleId && <FormHelperText>{errors.roleId}</FormHelperText>}
           </FormControl>
 

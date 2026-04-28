@@ -19,7 +19,7 @@ export function useRolesQuery() {
     queryKey: ["roles"],
     queryFn: async () => {
       const { data } =
-        await api.get<{ id: string; name: string }[]>("api/v1/roles");
+        await api.get<{ id: string; name: string; description: string | null }[]>("api/v1/roles");
       return data;
     },
   });

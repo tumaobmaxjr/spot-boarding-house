@@ -11,6 +11,7 @@ import {
   TableBody,
   TableCell,
   TableHead,
+  TablePagination,
   TableRow,
   Typography,
 } from "@mui/material";
@@ -42,6 +43,8 @@ export function ContactsSection({ boardingHouseId }: ContactsSectionProps) {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingContact, setEditingContact] = useState<ContactDto | null>(null);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -136,12 +139,12 @@ export function ContactsSection({ boardingHouseId }: ContactsSectionProps) {
 
       <Table size="small">
         <TableHead>
-          <TableRow>
-            <TableCell>Phone</TableCell>
-            <TableCell>Network</TableCell>
-            <TableCell>Primary</TableCell>
-            <TableCell>Updated At</TableCell>
-            <TableCell align="right">Actions</TableCell>
+          <TableRow sx={{ bgcolor: "grey.100" }}>
+            <TableCell sx={{ fontWeight: 700 }}>Phone</TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>Network</TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>Primary</TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>Updated At</TableCell>
+            <TableCell align="right" sx={{ fontWeight: 700 }}>Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -150,7 +153,9 @@ export function ContactsSection({ boardingHouseId }: ContactsSectionProps) {
               <TableCell colSpan={5}>No contacts yet.</TableCell>
             </TableRow>
           )}
-          {(data ?? []).map((contact) => (
+          {(data ?? [])
+            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+            .map((contact) => (
             <TableRow key={contact.id}>
               <TableCell>{contact.phoneNumber}</TableCell>
               <TableCell>{contact.network.toUpperCase()}</TableCell>
@@ -184,9 +189,21 @@ export function ContactsSection({ boardingHouseId }: ContactsSectionProps) {
                 </IconButton>
               </TableCell>
             </TableRow>
-          ))}
+            ))}
         </TableBody>
       </Table>
+      <TablePagination
+        component="div"
+        count={(data ?? []).length}
+        page={page}
+        onPageChange={(_e, newPage) => setPage(newPage)}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={(e) => {
+          setRowsPerPage(parseInt(e.target.value, 10));
+          setPage(0);
+        }}
+        rowsPerPageOptions={[5, 10]}
+      />
 
       <ContactDialog
         open={dialogOpen}

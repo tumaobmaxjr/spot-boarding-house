@@ -1,4 +1,5 @@
 import {
+  Autocomplete,
   Button,
   Dialog,
   DialogActions,
@@ -10,6 +11,7 @@ import {
   MenuItem,
   Select,
   TextField,
+  Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import {
@@ -199,18 +201,43 @@ export function BoardingHouseDialog({
         >
           {isAdmin && !isEdit && (
             <FormControl error={!!errors.ownerId} fullWidth>
-              <InputLabel>Owner</InputLabel>
-              <Select
-                value={ownerId}
-                onChange={(e) => setOwnerId(e.target.value)}
-                label="Owner"
-              >
-                {owners?.map((owner) => (
-                  <MenuItem key={owner.id} value={owner.id}>
-                    {owner.firstName} {owner.lastName}
-                  </MenuItem>
-                ))}
-              </Select>
+              <Autocomplete
+                options={owners ?? []}
+                value={owners?.find((owner) => owner.id === ownerId) ?? null}
+                onChange={(_event, value) => setOwnerId(value?.id ?? "")}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
+                filterOptions={(options, state) => {
+                  const q = state.inputValue.trim().toLowerCase();
+                  if (!q) return options;
+                  return options.filter((o) => {
+                    const fullName = `${o.firstName} ${o.lastName}`.toLowerCase();
+                    const email = (o.email ?? "").toLowerCase();
+                    const shortId = o.id.slice(0, 8).toLowerCase();
+                    return fullName.includes(q) || email.includes(q) || shortId.includes(q);
+                  });
+                }}
+                renderOption={(props, option) => (
+                  <li {...props} key={option.id}>
+                    <div>
+                      <Typography variant="body2" fontWeight={600}>
+                        {option.firstName} {option.lastName}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {option.email?.trim() || "No email"}
+                      </Typography>
+                    </div>
+                  </li>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Owner"
+                    placeholder="Search owner"
+                    error={!!errors.ownerId}
+                  />
+                )}
+              />
               {errors.ownerId && (
                 <FormHelperText>{errors.ownerId}</FormHelperText>
               )}

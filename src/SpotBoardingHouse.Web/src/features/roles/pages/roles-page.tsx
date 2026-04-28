@@ -10,6 +10,8 @@ import {
   TableBody,
   TableCell,
   TableHead,
+  TableSortLabel,
+  TablePagination,
   TableRow,
   Typography,
 } from "@mui/material";
@@ -39,6 +41,27 @@ export function RolesPage() {
   } | null>(null);
 
   const [dialogKey, setDialogKey] = useState(0);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [orderBy, setOrderBy] = useState<"name" | "createdAt">("createdAt");
+  const [order, setOrder] = useState<"asc" | "desc">("desc");
+
+  const handleSort = (field: "name" | "createdAt") => {
+    if (orderBy === field) {
+      setOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+      return;
+    }
+    setOrderBy(field);
+    setOrder("asc");
+  };
+
+  const sortedData = [...(data ?? [])].sort((a, b) => {
+    const direction = order === "asc" ? 1 : -1;
+    if (orderBy === "createdAt") {
+      return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * direction;
+    }
+    return a.name.localeCompare(b.name) * direction;
+  });
 
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -148,16 +171,22 @@ export function RolesPage() {
       </Box>
       <Table size="small">
         <TableHead>
-          <TableRow>
-            <TableCell>Name</TableCell>
-            <TableCell>Description</TableCell>
-            <TableCell>Created At</TableCell>
-            <TableCell>Updated At</TableCell>
-            <TableCell align="right">Actions</TableCell>
+          <TableRow sx={{ bgcolor: "grey.100" }}>
+            <TableCell sx={{ fontWeight: 700 }}>
+              <TableSortLabel active={orderBy === "name"} direction={orderBy === "name" ? order : "asc"} onClick={() => handleSort("name")}>Name</TableSortLabel>
+            </TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>Description</TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>
+              <TableSortLabel active={orderBy === "createdAt"} direction={orderBy === "createdAt" ? order : "asc"} onClick={() => handleSort("createdAt")}>Created At</TableSortLabel>
+            </TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>Updated At</TableCell>
+            <TableCell align="right" sx={{ fontWeight: 700 }}>Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {(data ?? []).map((role) => (
+          {sortedData
+            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+            .map((role) => (
             <TableRow key={role.id}>
               <TableCell>{role.name}</TableCell>
               <TableCell>{role.description ?? "-"}</TableCell>
@@ -177,9 +206,21 @@ export function RolesPage() {
                 </IconButton>
               </TableCell>
             </TableRow>
-          ))}
+            ))}
         </TableBody>
       </Table>
+      <TablePagination
+        component="div"
+        count={(data ?? []).length}
+        page={page}
+        onPageChange={(_e, newPage) => setPage(newPage)}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={(e) => {
+          setRowsPerPage(parseInt(e.target.value, 10));
+          setPage(0);
+        }}
+        rowsPerPageOptions={[5, 10, 25]}
+      />
 
       <RoleDialog
         key={dialogKey}

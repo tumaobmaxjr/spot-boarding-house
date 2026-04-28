@@ -15,6 +15,8 @@ import {
   TableBody,
   TableCell,
   TableHead,
+  TableSortLabel,
+  TablePagination,
   TableRow,
   Typography,
 } from "@mui/material";
@@ -44,6 +46,10 @@ export function RoomsPage() {
   const [dialogKey, setDialogKey] = useState(0);
   const [editingRoom, setEditingRoom] = useState<RoomDto | null>(null);
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [orderBy, setOrderBy] = useState<"roomNumber" | "createdAt">("createdAt");
+  const [order, setOrder] = useState<"asc" | "desc">("desc");
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -128,6 +134,24 @@ export function RoomsPage() {
     }));
   };
 
+  const sortedData = [...(data ?? [])].sort((a, b) => {
+    const direction = order === "asc" ? 1 : -1;
+    if (orderBy === "createdAt") {
+      return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * direction;
+    }
+    return a.roomNumber.localeCompare(b.roomNumber) * direction;
+  });
+  const visibleData = sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
+  const handleSort = (field: "roomNumber" | "createdAt") => {
+    if (orderBy === field) {
+      setOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+      return;
+    }
+    setOrderBy(field);
+    setOrder("asc");
+  };
+
   return (
     <Paper sx={{ p: 2 }}>
       <Box
@@ -146,22 +170,26 @@ export function RoomsPage() {
 
       <Table size="small">
         <TableHead>
-          <TableRow>
+          <TableRow sx={{ bgcolor: "grey.100" }}>
             <TableCell width={56} />
-            <TableCell>Boarding House</TableCell>
-            <TableCell>Room #</TableCell>
-            <TableCell>Capacity</TableCell>
-            <TableCell>Occupied</TableCell>
-            <TableCell>Remaining</TableCell>
-            <TableCell>Status</TableCell>
-            <TableCell>Description</TableCell>
-            <TableCell>Created At</TableCell>
-            <TableCell>Updated At</TableCell>
-            <TableCell align="right">Actions</TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>Boarding House</TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>
+              <TableSortLabel active={orderBy === "roomNumber"} direction={orderBy === "roomNumber" ? order : "asc"} onClick={() => handleSort("roomNumber")}>Room #</TableSortLabel>
+            </TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>Capacity</TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>Occupied</TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>Remaining</TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>Description</TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>
+              <TableSortLabel active={orderBy === "createdAt"} direction={orderBy === "createdAt" ? order : "asc"} onClick={() => handleSort("createdAt")}>Created At</TableSortLabel>
+            </TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>Updated At</TableCell>
+            <TableCell align="right" sx={{ fontWeight: 700 }}>Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {(data ?? []).map((room) => (
+          {visibleData.map((room) => (
             <Fragment key={room.id}>
               <TableRow>
                 <TableCell>
@@ -222,6 +250,18 @@ export function RoomsPage() {
           )}
         </TableBody>
       </Table>
+      <TablePagination
+        component="div"
+        count={(data ?? []).length}
+        page={page}
+        onPageChange={(_e, newPage) => setPage(newPage)}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={(e) => {
+          setRowsPerPage(parseInt(e.target.value, 10));
+          setPage(0);
+        }}
+        rowsPerPageOptions={[5, 10, 25]}
+      />
 
       <RoomDialog
         key={dialogKey}
@@ -245,6 +285,8 @@ export function RoomsPage() {
         boardingHouses={(boardingHouses ?? []).map((bh) => ({
           id: bh.id,
           name: bh.name,
+          address: bh.address,
+          ownerName: bh.ownerName,
         }))}
         isLoading={createRoom.isPending || updateRoom.isPending}
       />

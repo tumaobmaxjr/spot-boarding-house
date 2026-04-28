@@ -14,6 +14,8 @@ import {
   TableBody,
   TableCell,
   TableHead,
+  TableSortLabel,
+  TablePagination,
   TableRow,
   Typography,
 } from "@mui/material";
@@ -61,6 +63,10 @@ export function BoardingHousesPage() {
     severity: "success" | "error";
   }>({ open: false, message: "", severity: "success" });
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [orderBy, setOrderBy] = useState<"name" | "createdAt">("createdAt");
+  const [order, setOrder] = useState<"asc" | "desc">("desc");
 
   if (isLoading) return <CircularProgress />;
   if (isError)
@@ -160,6 +166,24 @@ export function BoardingHousesPage() {
     }));
   };
 
+  const sortedData = [...(data ?? [])].sort((a, b) => {
+    const direction = order === "asc" ? 1 : -1;
+    if (orderBy === "createdAt") {
+      return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * direction;
+    }
+    return a.name.localeCompare(b.name) * direction;
+  });
+  const visibleData = sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
+  const handleSort = (field: "name" | "createdAt") => {
+    if (orderBy === field) {
+      setOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+      return;
+    }
+    setOrderBy(field);
+    setOrder("asc");
+  };
+
   return (
     <Paper sx={{ p: 2 }}>
       <Box
@@ -179,20 +203,24 @@ export function BoardingHousesPage() {
       </Box>
       <Table size="small">
         <TableHead>
-          <TableRow>
+          <TableRow sx={{ bgcolor: "grey.100" }}>
             <TableCell width={56} />
-            <TableCell>Name</TableCell>
-            <TableCell>Address</TableCell>
-            <TableCell>Gender</TableCell>
-            {isAdmin && <TableCell>Owner</TableCell>}
-            <TableCell>Location</TableCell>
-            <TableCell>Created At</TableCell>
-            <TableCell>Updated At</TableCell>
-            <TableCell align="right">Actions</TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>
+              <TableSortLabel active={orderBy === "name"} direction={orderBy === "name" ? order : "asc"} onClick={() => handleSort("name")}>Name</TableSortLabel>
+            </TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>Address</TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>Gender</TableCell>
+            {isAdmin && <TableCell sx={{ fontWeight: 700 }}>Owner</TableCell>}
+            <TableCell sx={{ fontWeight: 700 }}>Location</TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>
+              <TableSortLabel active={orderBy === "createdAt"} direction={orderBy === "createdAt" ? order : "asc"} onClick={() => handleSort("createdAt")}>Created At</TableSortLabel>
+            </TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>Updated At</TableCell>
+            <TableCell align="right" sx={{ fontWeight: 700 }}>Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {(data ?? []).map((bh) => (
+          {visibleData.map((bh) => (
             <Fragment key={bh.id}>
               <TableRow>
                 <TableCell>
@@ -243,6 +271,18 @@ export function BoardingHousesPage() {
           ))}
         </TableBody>
       </Table>
+      <TablePagination
+        component="div"
+        count={(data ?? []).length}
+        page={page}
+        onPageChange={(_e, newPage) => setPage(newPage)}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={(e) => {
+          setRowsPerPage(parseInt(e.target.value, 10));
+          setPage(0);
+        }}
+        rowsPerPageOptions={[5, 10, 25]}
+      />
 
       <BoardingHouseDialog
         key={dialogKey}
