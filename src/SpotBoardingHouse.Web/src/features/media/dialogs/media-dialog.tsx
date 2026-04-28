@@ -1,4 +1,5 @@
 import {
+  Alert,
   Button,
   Dialog,
   DialogActions,
@@ -11,6 +12,7 @@ import {
   TextField,
 } from "@mui/material";
 import { useState } from "react";
+import { useUploadImage } from "../../uploads/queries";
 import type { CreateMediaPayload, UpdateMediaPayload } from "../types";
 
 interface MediaDialogProps {
@@ -37,27 +39,43 @@ export function MediaDialog({
   isLoading,
 }: MediaDialogProps) {
   const isEdit = !!initialData;
-  const [url, setUrl] = useState(initialData?.url ?? "");
+  const uploadImage = useUploadImage();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [existingUrl] = useState(initialData?.url ?? "");
   const [isPrimary, setIsPrimary] = useState(initialData?.isPrimary ?? false);
   const [displayOrder, setDisplayOrder] = useState(initialData?.displayOrder ?? 0);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const validate = () => {
     const nextErrors: Record<string, string> = {};
-    if (!url.trim()) nextErrors.url = "URL is required";
-    if (url.trim().length > 500) nextErrors.url = "URL must be 500 characters or less";
+    if (!isEdit && !selectedFile) nextErrors.file = "Image file is required";
     if (!Number.isFinite(displayOrder)) nextErrors.displayOrder = "Display order is required";
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
 
+    setUploadError(null);
+
+    let uploadedUrl: string | undefined;
+
+    if (selectedFile) {
+      try {
+        const uploaded = await uploadImage.mutateAsync(selectedFile);
+        uploadedUrl = uploaded.url;
+      } catch (err) {
+        setUploadError(err instanceof Error ? err.message : "Image upload failed.");
+        return;
+      }
+    }
+
     if (isEdit) {
       onSubmit({
-        url: url.trim(),
+        ...(uploadedUrl ? { url: uploadedUrl } : {}),
         isPrimary,
         displayOrder,
       });
@@ -67,11 +85,13 @@ export function MediaDialog({
     onSubmit({
       boardingHouseId,
       roomId,
-      url: url.trim(),
+      url: uploadedUrl ?? "",
       isPrimary,
       displayOrder,
     });
   };
+
+  const isSubmitting = Boolean(isLoading || uploadImage.isPending);
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -86,16 +106,43 @@ export function MediaDialog({
             overflow: "visible",
           }}
         >
-          <TextField
-            autoFocus
-            label="Media URL"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            error={!!errors.url}
-            helperText={errors.url}
-            required
-            fullWidth
-          />
+          {!isEdit && (
+            <TextField
+              autoFocus
+              type="file"
+              inputProps={{ accept: "image/*" }}
+              onChange={(e) => {
+                const input = e.target as HTMLInputElement;
+                setSelectedFile(input.files?.[0] ?? null);
+              }}
+              error={!!errors.file}
+              helperText={errors.file || "Upload an image file (jpg, png, webp, gif, avif)."}
+              required
+              fullWidth
+            />
+          )}
+
+          {isEdit && (
+            <>
+              <TextField
+                type="file"
+                inputProps={{ accept: "image/*" }}
+                onChange={(e) => {
+                  const input = e.target as HTMLInputElement;
+                  setSelectedFile(input.files?.[0] ?? null);
+                }}
+                helperText="Optional: select a new image to replace existing file."
+                fullWidth
+              />
+              {existingUrl && (
+                <Alert severity="info" variant="outlined">
+                  Current image: {existingUrl}
+                </Alert>
+              )}
+            </>
+          )}
+
+          {uploadError && <Alert severity="error">{uploadError}</Alert>}
 
           <TextField
             label="Display Order"
@@ -122,11 +169,11 @@ export function MediaDialog({
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose} disabled={isLoading}>
+          <Button onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>
-          <Button type="submit" variant="contained" disabled={isLoading}>
-            {isLoading ? "Saving..." : isEdit ? "Update" : "Create"}
+          <Button type="submit" variant="contained" disabled={isSubmitting}>
+            {isSubmitting ? "Saving..." : isEdit ? "Update" : "Create"}
           </Button>
         </DialogActions>
       </form>
